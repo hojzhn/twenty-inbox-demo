@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 
 // Anchored popover with built-in search and outside-click dismiss.
 // The trigger is rendered by the caller; this component is the floating panel.
@@ -51,14 +52,14 @@ export function SearchPopover({
       : sections;
     body =
       visible.length === 0 ? (
-        <div className="px-3 py-2 text-xs text-[var(--txt3)]">
+        <div className="px-3 py-2 text-xs text-[var(--font-color-tertiary)]">
           {emptyMessage}
         </div>
       ) : (
         visible.map((s, i) => (
           <div key={s.label || i} className="flex flex-col">
             {s.label && (
-              <div className="px-3 pt-2 pb-1 text-[11px] text-[var(--txt3)]">
+              <div className="px-3 pt-2 pb-1 text-[11px] text-[var(--font-color-tertiary)]">
                 {s.label}
               </div>
             )}
@@ -72,7 +73,7 @@ export function SearchPopover({
       : items;
     body =
       filtered.length === 0 ? (
-        <div className="px-3 py-2 text-xs text-[var(--txt3)]">
+        <div className="px-3 py-2 text-xs text-[var(--font-color-tertiary)]">
           {emptyMessage}
         </div>
       ) : (
@@ -81,27 +82,32 @@ export function SearchPopover({
   }
 
   return (
-    <div
+    <motion.div
       ref={ref}
+      onClick={(e) => e.stopPropagation()}
+      initial={{ opacity: 0, y: 4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 4 }}
+      transition={{ duration: 0.15, ease: "easeOut" }}
       className={`absolute ${
         align === "right" ? "right-0" : "left-0"
-      } top-full mt-1 z-10 bg-[var(--bg)] border border-[var(--txt3)] rounded shadow-lg flex flex-col overflow-hidden`}
+      } top-full mt-1 z-10 bg-[var(--background-transparent-primary)] backdrop-blur-md border border-[var(--border-color-light)] rounded shadow-lg flex flex-col overflow-hidden`}
       style={{ width }}
     >
       {showSearch && (
-        <div className="px-3 py-2 border-b border-[var(--txt3)]">
+        <div className="px-3 py-2 border-b border-[var(--border-color-light)]">
           <input
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full bg-transparent border-0 outline-none text-xs text-[var(--txt)] placeholder:text-[var(--txt3)]"
+            className="w-full bg-transparent border-0 outline-none text-xs text-[var(--font-color-primary)] placeholder:text-[var(--font-color-tertiary)]"
           />
         </div>
       )}
       <div className="max-h-[280px] overflow-y-auto py-1 flex flex-col">
         {body}
       </div>
-    </div>
+    </motion.div>
   );
 }

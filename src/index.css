@@ -2,24 +2,235 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg: #fafafa;
-  --bg2: #f5f5f5;
-  --bg3: #eeeeee;
-  --txt: #1a1a1a;
-  --txt2: #666666;
-  --txt3: #999999;
-  --txt4: #cccccc;
-  --accent: #0066cc;
-  --point: #ff6b6b;
-  --point2: #ffffff;
-  --border: #e0e0e0;
-  --success: #51cf66;
-  --warning: #ffd43b;
-  --error: #ff6b6b;
+/* =====================================================================
+ * Twenty design system tokens (light)
+ * Source: github.com/twentyhq/twenty packages/twenty-ui/src/theme/constants
+ * Hex values are sRGB equivalents of Twenty's display-p3 / Radix-P3 tokens.
+ * ===================================================================== */
+
+:root,
+[data-theme='light'] {
+  /* Backgrounds */
+  --background-primary: #ffffff;
+  --background-secondary: #fcfcfc;
+  --background-tertiary: #f1f1f1;
+  --background-quaternary: #ebebeb;
+  --background-inverted-primary: #333333;
+  --background-inverted-secondary: #666666;
+  --background-danger: #ffefef;
+  --background-noisy: #fcfcfc;
+
+  --background-transparent-primary: rgba(255, 255, 255, 0.5);
+  --background-transparent-secondary: rgba(255, 255, 255, 0.3);
+  --background-transparent-strong: rgba(0, 0, 0, 0.161);
+  --background-transparent-medium: rgba(0, 0, 0, 0.078);
+  --background-transparent-light: rgba(0, 0, 0, 0.039);
+  --background-transparent-lighter: rgba(0, 0, 0, 0.02);
+  --background-transparent-danger: rgba(255, 0, 0, 0.063);
+  --background-transparent-blue: rgba(0, 0, 238, 0.063);
+  --background-transparent-orange: rgba(255, 128, 0, 0.118);
+  --background-transparent-success: rgba(0, 168, 69, 0.094);
+
+  --background-overlay-primary: rgba(0, 0, 0, 0.722);
+  --background-overlay-secondary: rgba(0, 0, 0, 0.361);
+  --background-overlay-tertiary: rgba(0, 0, 0, 0.071);
+
+  /* Font colors */
+  --font-color-primary: #333333;
+  --font-color-secondary: #666666;
+  --font-color-tertiary: #999999;
+  --font-color-light: #b3b3b3;
+  --font-color-extra-light: #cccccc;
+  --font-color-inverted: #ffffff;
+  --font-color-danger: #e5484d;
+  --font-color-on-accent: #ffffff;
+
+  /* Border colors */
+  --border-color-strong: #d6d6d6;
+  --border-color-medium: #ebebeb;
+  --border-color-light: #f1f1f1;
+  --border-color-inverted: #333333;
+  --border-color-secondary-inverted: #666666;
+  --border-color-danger: #ffd1d9;
+  --border-color-blue: #b1a9ff;
+  --border-color-transparent-strong: rgba(0, 0, 0, 0.071);
+
+  /* Accent (Twenty brand = Radix indigo) */
+  --accent-primary: #d2deff;
+  --accent-secondary: #d2deff;
+  --accent-tertiary: #f0f4ff;
+  --accent-quaternary: #f8faff;
+  --accent-3570: #8da4ef;
+  --accent-4060: #8da4ef;
+  --accent-1: #fdfdfe;
+  --accent-2: #f8faff;
+  --accent-3: #f0f4ff;
+  --accent-4: #e6edfe;
+  --accent-5: #d9e2fc;
+  --accent-6: #c6d4f9;
+  --accent-7: #aec0f5;
+  --accent-8: #8da4ef;
+  --accent-9: #3e63dd;
+  --accent-10: #3a5ccc;
+  --accent-11: #3451b2;
+  --accent-12: #101d46;
+
+  /* Main palette (Radix step 9) — chips, status pills, semantic colors */
+  --color-blue: #3e63dd; /* Twenty calls indigo "blue" */
+  --color-red: #e5484d;
+  --color-green: #46a758;
+  --color-orange: #f76b15;
+  --color-yellow: #ffe629;
+  --color-purple: #8e4ec6;
+  --color-pink: #d6409f;
+  --color-turquoise: #12a594; /* Twenty calls teal "turquoise" */
+  --color-sky: #00b2e7;
+  --color-gray: #999999;
+
+  /* Soft tag backgrounds (Radix step 3) */
+  --color-blue-soft: #f0f4ff;
+  --color-red-soft: #ffefef;
+  --color-green-soft: #e9f9ee;
+  --color-orange-soft: #ffe8d7;
+  --color-yellow-soft: #fffbd1;
+
+  /* Avatar / tag pairs — Radix step 3 (bg) + step 11 (fg) */
+  --avatar-blue-bg: #f0f4ff;
+  --avatar-blue-fg: #3451b2;
+  --avatar-green-bg: #e9f9ee;
+  --avatar-green-fg: #2b9a66;
+  --avatar-orange-bg: #fff1e7;
+  --avatar-orange-fg: #cc4e00;
+  --avatar-purple-bg: #f7eeff;
+  --avatar-purple-fg: #8347b9;
+  --avatar-pink-bg: #fce5f3;
+  --avatar-pink-fg: #cd1d8d;
+  --avatar-turquoise-bg: #e0f8f3;
+  --avatar-turquoise-fg: #0d8c7b;
+  --avatar-red-bg: #ffefef;
+  --avatar-red-fg: #c62a2f;
+  --avatar-sky-bg: #e1f6fd;
+  --avatar-sky-fg: #00749e;
+
+  /* Box shadows */
+  --box-shadow-light: 0px 2px 4px 0px rgba(0, 0, 0, 0.039),
+    0px 0px 4px 0px rgba(0, 0, 0, 0.078);
+  --box-shadow-strong: 2px 4px 16px 0px rgba(0, 0, 0, 0.161),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.078);
+  --box-shadow-underline: 0px 1px 0px 0px rgba(0, 0, 0, 0.361);
+  --box-shadow-super-heavy: 0px 0px 8px 0px rgba(0, 0, 0, 0.161),
+    0px 8px 64px -16px rgba(0, 0, 0, 0.478),
+    0px 24px 56px -16px rgba(0, 0, 0, 0.078);
 }
 
-html, body, #root {
+/* =====================================================================
+ * Twenty design system tokens (dark)
+ * ===================================================================== */
+
+[data-theme='dark'] {
+  --background-primary: #171717;
+  --background-secondary: #1b1b1b;
+  --background-tertiary: #1d1d1d;
+  --background-quaternary: #222222;
+  --background-inverted-primary: #ebebeb;
+  --background-inverted-secondary: #b3b3b3;
+  --background-danger: #3b1219;
+  --background-noisy: #1b1b1b;
+
+  --background-transparent-primary: rgba(0, 0, 0, 0.5);
+  --background-transparent-secondary: rgba(0, 0, 0, 0.3);
+  --background-transparent-strong: rgba(255, 255, 255, 0.141);
+  --background-transparent-medium: rgba(255, 255, 255, 0.102);
+  --background-transparent-light: rgba(255, 255, 255, 0.059);
+  --background-transparent-lighter: rgba(255, 255, 255, 0.031);
+
+  --background-overlay-primary: rgba(0, 0, 0, 0.722);
+  --background-overlay-secondary: rgba(0, 0, 0, 0.361);
+  --background-overlay-tertiary: rgba(0, 0, 0, 0.361);
+
+  --font-color-primary: #ebebeb;
+  --font-color-secondary: #b3b3b3;
+  --font-color-tertiary: #818181;
+  --font-color-light: #666666;
+  --font-color-extra-light: #4c4c4c;
+  --font-color-inverted: #171717;
+  --font-color-danger: #e5484d;
+  --font-color-on-accent: #ffffff;
+
+  --border-color-strong: #484848;
+  --border-color-medium: #222222;
+  --border-color-light: #1d1d1d;
+  --border-color-inverted: #ebebeb;
+  --border-color-secondary-inverted: #b3b3b3;
+  --border-color-danger: #500f1c;
+  --border-color-blue: #3a4894;
+  --border-color-transparent-strong: rgba(255, 255, 255, 0.071);
+
+  --accent-primary: #253974;
+  --accent-secondary: #253974;
+  --accent-tertiary: #182449;
+  --accent-quaternary: #131c3b;
+  --accent-3570: #3451b2;
+  --accent-4060: #3451b2;
+  --accent-1: #11131f;
+  --accent-2: #131c3b;
+  --accent-3: #182449;
+  --accent-4: #1d2e62;
+  --accent-5: #253974;
+  --accent-6: #304384;
+  --accent-7: #3a4894;
+  --accent-8: #435db1;
+  --accent-9: #3e63dd;
+  --accent-10: #5472e4;
+  --accent-11: #9eb1ff;
+  --accent-12: #d6e1ff;
+
+  --color-blue: #3e63dd;
+  --color-red: #e5484d;
+  --color-green: #46a758;
+  --color-orange: #f76b15;
+  --color-yellow: #ffe629;
+  --color-purple: #8e4ec6;
+  --color-pink: #d6409f;
+  --color-turquoise: #12a594;
+  --color-sky: #00b2e7;
+  --color-gray: #b3b3b3;
+
+  --color-blue-soft: #182449;
+  --color-red-soft: #3b1219;
+  --color-green-soft: #132d21;
+  --color-orange-soft: #331e0b;
+  --color-yellow-soft: #2b290e;
+
+  --avatar-blue-bg: #182449;
+  --avatar-blue-fg: #9eb1ff;
+  --avatar-green-bg: #132d21;
+  --avatar-green-fg: #4cc38a;
+  --avatar-orange-bg: #331e0b;
+  --avatar-orange-fg: #ff8b3e;
+  --avatar-purple-bg: #2b1840;
+  --avatar-purple-fg: #c372fc;
+  --avatar-pink-bg: #401622;
+  --avatar-pink-fg: #f15db1;
+  --avatar-turquoise-bg: #0d2c2c;
+  --avatar-turquoise-fg: #2eb6a3;
+  --avatar-red-bg: #3b1219;
+  --avatar-red-fg: #ff8b87;
+  --avatar-sky-bg: #112d3c;
+  --avatar-sky-fg: #2ec8ee;
+
+  --box-shadow-light: 0px 2px 4px 0px rgba(0, 0, 0, 0.04),
+    0px 0px 4px 0px rgba(0, 0, 0, 0.08);
+  --box-shadow-strong: 2px 4px 16px 0px rgba(0, 0, 0, 0.16),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.08);
+  --box-shadow-underline: 0px 1px 0px 0px rgba(0, 0, 0, 0.32);
+  --box-shadow-super-heavy: 2px 4px 16px 0px rgba(0, 0, 0, 0.12),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.04);
+}
+
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -27,9 +238,43 @@ html, body, #root {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  background: var(--background-primary);
+  color: var(--font-color-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbars — theme-matched, thin, subtle. Firefox uses scrollbar-color +
+ * scrollbar-width; Webkit/Chromium uses ::-webkit-scrollbar pseudo-elements.
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--border-color-strong);
+  border-radius: 6px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--font-color-tertiary);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+/* Hide native arrow buttons (Windows Chromium shows them by default). */
+*::-webkit-scrollbar-button {
+  display: none;
 }

@@ -1,8 +1,8 @@
 // Trigger-specific context blocks. Each renders null when its data is absent.
 
-import { relativeTime } from "./utils";
+import { relativeTime } from "../../utils/time";
 import { Chip, Section, ContextBlock, LetterAvatar } from "./Primitives";
-import { useChipClick } from "./ChipContext";
+import { useChipClick } from "../../context/ChipContext";
 
 export function EmailContext({ task }) {
   const navigate = useChipClick();
@@ -17,17 +17,17 @@ export function EmailContext({ task }) {
   return (
     <Section>
       <ContextBlock onClick={onOpen}>
-        <div className="flex justify-between items-baseline gap-3 text-[11px] text-[var(--txt2)]">
+        <div className="flex justify-between items-baseline gap-3 text-[11px] text-[var(--font-color-secondary)]">
           <div className="flex flex-col">
             {task.target && <Chip entity={task.target} />}{" "}
-            <span className="text-[var(--txt2)] ml-1">
+            <span className="text-[var(--font-color-secondary)] ml-1">
               {c.emailTo}{" "}
-              <i className="fa-regular fa-angle-down text-[0.8em]" />
+              <i className="ti ti-chevron-down text-[0.8em]" />
             </span>
           </div>
           {c.emailReceivedAt && <span>{relativeTime(c.emailReceivedAt)}</span>}
         </div>
-        <span className="m-0 text-[13px] text-[var(--txt)] whitespace-pre-wrap">
+        <span className="m-0 text-[13px] text-[var(--font-color-primary)] whitespace-pre-wrap">
           {c.emailSnippet}
         </span>
       </ContextBlock>
@@ -54,7 +54,7 @@ export function WorkflowContext({ task }) {
           <p className="m-0 whitespace-pre-wrap">{c.alertSummary}</p>
         )}
         {c.triggerField && c.triggerValue && (
-          <div className="text-xs text-[var(--txt2)]">
+          <div className="text-xs text-[var(--font-color-secondary)]">
             {c.triggerField} = {c.triggerValue}
           </div>
         )}
@@ -76,7 +76,7 @@ export function MentionContext({ task }) {
     <Section>
       <ContextBlock onClick={onOpen}>
         <Chip entity={task.createdBy} />
-        <p className="m-0 text-[13px] text-[var(--txt)] whitespace-pre-wrap">
+        <p className="m-0 text-[13px] text-[var(--font-color-primary)] whitespace-pre-wrap">
           {c.noteSnippet}
         </p>
       </ContextBlock>

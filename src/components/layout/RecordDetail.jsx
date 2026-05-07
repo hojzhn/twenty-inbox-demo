@@ -1,49 +1,65 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Chip, ColorAvatar, IconButton, chipBase } from "./Primitives";
-import { relativeTime } from "./utils";
-import { MARCUS_TASKS } from "./Tasks";
-import { COMPANIES, OPPORTUNITIES, PEOPLE, NOTES } from "./Graph";
+import { AnimatePresence, motion } from "framer-motion";
+import { Chip, ColorAvatar, chipBase } from "../common/Primitives";
+import { relativeTime } from "../../utils/time";
+import { MARCUS_TASKS } from "../../data/Tasks";
+import { COMPANIES, OPPORTUNITIES, PEOPLE, NOTES } from "../../data/Graph";
 
 // Type metadata --------------------------------------------------------------
 
 const TYPE_META = {
   Task: {
-    icon: "fa-square-check",
+    icon: "ti-checkbox",
     plural: "Tasks",
+    tone: "green",
     tabs: ["Note", "Timeline", "Files"],
   },
   Opportunity: {
-    icon: "fa-bullseye",
+    icon: "ti-target",
     plural: "Opportunities",
+    tone: "red",
     tabs: ["Timeline", "Tasks", "Notes", "Files", "Emails", "Calendar"],
   },
   Company: {
-    icon: "fa-building",
+    icon: "ti-building",
     plural: "Companies",
+    tone: "blue",
     tabs: ["Timeline", "Tasks", "Notes", "Files"],
   },
   Person: {
-    icon: "fa-user",
+    icon: "ti-user",
     plural: "People",
+    tone: "purple",
     tabs: ["Timeline", "Tasks", "Notes", "Files", "Emails"],
   },
-  User: { icon: "fa-circle-user", plural: "Users", tabs: ["Timeline"] },
+  User: {
+    icon: "ti-user-circle",
+    plural: "Users",
+    tone: "gray",
+    tabs: ["Timeline"],
+  },
   Note: {
-    icon: "fa-file-lines",
+    icon: "ti-file-text",
     plural: "Notes",
+    tone: "green",
     tabs: ["Note", "Timeline", "Files"],
   },
-  System: { icon: "fa-gear", plural: "System", tabs: ["Timeline"] },
+  System: {
+    icon: "ti-settings",
+    plural: "System",
+    tone: "gray",
+    tabs: ["Timeline"],
+  },
 };
 
 const TAB_ICON = {
-  Timeline: "fa-desktop",
-  Tasks: "fa-square-check",
-  Notes: "fa-file-lines",
-  Note: "fa-file-lines",
-  Files: "fa-paperclip",
-  Emails: "fa-envelope",
-  Calendar: "fa-calendar",
+  Timeline: "ti-device-desktop",
+  Tasks: "ti-checkbox",
+  Notes: "ti-file-text",
+  Note: "ti-file-text",
+  Files: "ti-paperclip",
+  Emails: "ti-mail",
+  Calendar: "ti-calendar",
 };
 
 // Lookup ---------------------------------------------------------------------
@@ -91,15 +107,17 @@ const chips = (entities) =>
 
 function FieldEntry({ icon, label, value }) {
   return (
-    <div className="grid grid-cols-[110px_1fr] gap-3 items-center min-h-[28px] py-1 text-[13px]">
-      <span className="flex items-center gap-2 text-[var(--txt2)]">
-        <span className="w-4 inline-flex justify-center text-[var(--txt3)]">
+    <div className="flex items-baseline gap-3 items-center min-h-[28px] py-1 text-[0.92em]">
+      <span className="flex items-center gap-2 text-[var(--font-color-secondary)]">
+        <span className="w-4 inline-flex justify-center text-[var(--font-color-tertiary)]">
           {icon}
         </span>
-        <span>{label}</span>
+        <span className="w-[90px]">{label}</span>
       </span>
-      <span className="min-w-0">
-        {value ?? <span className="text-[var(--txt3)]">{label}</span>}
+      <span className="min-w-0 flex-1">
+        {value ?? (
+          <span className="text-[var(--font-color-tertiary)]">{label}</span>
+        )}
       </span>
     </div>
   );
@@ -108,9 +126,9 @@ function FieldEntry({ icon, label, value }) {
 function CollapsibleGroup({ title, children }) {
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between text-[12px] text-[var(--txt2)] font-medium py-1">
+      <div className="flex items-center justify-between text-[12px] text-[var(--font-color-secondary)] font-medium py-1">
         <span>{title}</span>
-        <i className="fa-solid fa-chevron-up text-[10px] text-[var(--txt3)]" />
+        <i className="ti ti-chevron-up text-[10px] text-[var(--font-color-tertiary)]" />
       </div>
       <div className="flex flex-col">{children}</div>
     </div>
@@ -152,10 +170,10 @@ function formatDate(iso) {
 function StatusPill({ status }) {
   const tone =
     status === "done"
-      ? "bg-emerald-900/40 text-emerald-300"
+      ? "bg-[var(--color-green-soft)] text-[var(--color-green)]"
       : status === "dismissed"
-        ? "bg-gray-800 text-gray-400"
-        : "bg-rose-900/40 text-rose-300";
+        ? "bg-[var(--background-quaternary)] text-[var(--font-color-tertiary)]"
+        : "bg-[var(--color-red-soft)] text-[var(--color-red)]";
   return (
     <span className={`px-1.5 py-0.5 rounded text-[12px] capitalize ${tone}`}>
       {status}
@@ -165,13 +183,11 @@ function StatusPill({ status }) {
 
 function LinkedSection({ title, entities, actions }) {
   return (
-    <div className="border-t border-[var(--bg3)] pt-3 pb-2">
+    <div className="border-t border-[var(--border-color-medium)] pt-3 pb-2">
       <div className="flex items-center justify-between mb-2">
         <span className="font-semibold text-[14px]">{title}</span>
-        <div className="flex items-center gap-2 text-[var(--txt3)] text-[12px]">
-          {actions || (
-            <i className="fa-regular fa-pen-to-square text-[12px]" />
-          )}
+        <div className="flex items-center gap-2 text-[var(--font-color-tertiary)] text-[12px]">
+          {actions || <i className="ti ti-edit text-[12px]" />}
         </div>
       </div>
       {entities && entities.length > 0 && <ChipList entities={entities} />}
@@ -180,11 +196,11 @@ function LinkedSection({ title, entities, actions }) {
 }
 
 const linkedActions = {
-  edit: <i className="fa-regular fa-pen-to-square text-[12px]" />,
+  edit: <i className="ti ti-edit text-[12px]" />,
   openAdd: (
     <>
-      <i className="fa-solid fa-arrow-up-right text-[12px]" />
-      <i className="fa-solid fa-plus text-[12px]" />
+      <i className="ti ti-arrow-up-right text-[12px]" />
+      <i className="ti ti-plus text-[12px]" />
     </>
   ),
 };
@@ -195,12 +211,12 @@ function SystemFields({ record }) {
   return (
     <CollapsibleGroup title="System">
       <FieldEntry
-        icon={<i className="fa-regular fa-calendar" />}
+        icon={<i className="ti ti-calendar" />}
         label="Creation date"
         value={record?.createdAt ? relativeTime(record.createdAt) : null}
       />
       <FieldEntry
-        icon={<i className="fa-solid fa-bullseye" />}
+        icon={<i className="ti ti-target" />}
         label="Created by"
         value={record?.createdBy ? <Chip entity={record.createdBy} /> : null}
       />
@@ -217,26 +233,23 @@ function TaskFields({ record }) {
     <>
       <CollapsibleGroup title="General">
         <FieldEntry
-          icon={<i className="fa-regular fa-calendar" />}
+          icon={<i className="ti ti-calendar" />}
           label="Due Date"
           value={record?.dueDate ? relativeTime(record.dueDate) : null}
         />
         <FieldEntry
-          icon={<i className="fa-solid fa-check" />}
+          icon={<i className="ti ti-check" />}
           label="Status"
           value={record?.status ? <StatusPill status={record.status} /> : null}
         />
         <FieldEntry
-          icon={<i className="fa-regular fa-circle-user" />}
+          icon={<i className="ti ti-user-circle" />}
           label="Assignee"
           value={assignee ? <Chip entity={assignee} /> : null}
         />
+        <FieldEntry icon={<i className="ti ti-edit" />} label="Body" />
         <FieldEntry
-          icon={<i className="fa-regular fa-pen-to-square" />}
-          label="Body"
-        />
-        <FieldEntry
-          icon={<i className="fa-solid fa-arrow-up-right" />}
+          icon={<i className="ti ti-arrow-up-right" />}
           label="Relations"
           value={chips(record?.relations)}
         />
@@ -255,41 +268,35 @@ function OpportunityFields({ record }) {
     <>
       <CollapsibleGroup title="Deal">
         <FieldEntry
-          icon={<i className="fa-solid fa-dollar-sign" />}
+          icon={<i className="ti ti-currency-dollar" />}
           label="Amount"
           value={formatCurrency(record?.amount)}
         />
         <FieldEntry
-          icon={<i className="fa-regular fa-circle-dot" />}
+          icon={<i className="ti ti-circle-dot" />}
           label="Stage"
           value={
             record?.stage ? (
-              <span className="px-1.5 py-0.5 rounded bg-rose-900/40 text-rose-300 text-[12px]">
+              <span className="px-1.5 py-0.5 rounded bg-[var(--color-red-soft)] text-[var(--color-red)] text-[12px]">
                 {record.stage}
               </span>
             ) : null
           }
         />
         <FieldEntry
-          icon={<i className="fa-regular fa-calendar" />}
+          icon={<i className="ti ti-calendar" />}
           label="Close date"
           value={formatDate(record?.closeDate)}
         />
       </CollapsibleGroup>
       <CollapsibleGroup title="Relations">
         <FieldEntry
-          icon={<i className="fa-solid fa-building" />}
+          icon={<i className="ti ti-building" />}
           label="Company"
           value={chips(companies)}
         />
-        <FieldEntry
-          icon={<i className="fa-solid fa-user" />}
-          label="Point of ..."
-        />
-        <FieldEntry
-          icon={<i className="fa-solid fa-circle-user" />}
-          label="Owner"
-        />
+        <FieldEntry icon={<i className="ti ti-user" />} label="Point of ..." />
+        <FieldEntry icon={<i className="ti ti-user-circle" />} label="Owner" />
       </CollapsibleGroup>
       <SystemFields record={record} />
       <LinkedSection title="Point of Contact" actions={linkedActions.edit} />
@@ -316,42 +323,39 @@ function PersonFields({ record }) {
     <>
       <CollapsibleGroup title="General">
         <FieldEntry
-          icon={<i className="fa-regular fa-envelope" />}
+          icon={<i className="ti ti-mail" />}
           label="Emails"
           value={record?.email ? <Pill>{record.email}</Pill> : null}
         />
         <FieldEntry
-          icon={<i className="fa-solid fa-phone" />}
+          icon={<i className="ti ti-phone" />}
           label="Phones"
           value={record?.phone ? <Pill>{record.phone}</Pill> : null}
         />
         <FieldEntry
-          icon={<i className="fa-solid fa-map" />}
+          icon={<i className="ti ti-map" />}
           label="City"
           value={record?.city}
         />
       </CollapsibleGroup>
       <CollapsibleGroup title="Work">
         <FieldEntry
-          icon={<i className="fa-solid fa-building" />}
+          icon={<i className="ti ti-building" />}
           label="Company"
           value={chips(employerChip)}
         />
         <FieldEntry
-          icon={<i className="fa-solid fa-id-badge" />}
+          icon={<i className="ti ti-id-badge" />}
           label="Job Title"
           value={record?.title}
         />
       </CollapsibleGroup>
       <CollapsibleGroup title="Social">
         <FieldEntry
-          icon={<i className="fa-brands fa-linkedin" />}
+          icon={<i className="ti ti-brand-linkedin" />}
           label="Linkedin"
         />
-        <FieldEntry
-          icon={<i className="fa-brands fa-x-twitter" />}
-          label="X"
-        />
+        <FieldEntry icon={<i className="ti ti-brand-x" />} label="X" />
       </CollapsibleGroup>
       <SystemFields record={record} />
       <LinkedSection
@@ -379,26 +383,26 @@ function CompanyFields({ record }) {
     <>
       <CollapsibleGroup title="General">
         <FieldEntry
-          icon={<i className="fa-solid fa-globe" />}
+          icon={<i className="ti ti-link" />}
           label="Domain Name"
           value={record?.domain}
         />
         <FieldEntry
-          icon={<i className="fa-solid fa-location-dot" />}
-          label="Address"
-          value={record?.city}
+          icon={<i className="ti ti-user-circle" />}
+          label="Account Owner"
+          value={record?.domain}
         />
+      </CollapsibleGroup>
+
+      <CollapsibleGroup title="Business">
         <FieldEntry
-          icon={<i className="fa-solid fa-dollar-sign" />}
-          label="Annual Revenue"
-          value={
-            typeof record?.annualRevenue === "number"
-              ? formatCurrency(record.annualRevenue)
-              : null
-          }
+          icon={<i className="ti ti-moneybag" />}
+          label="APR"
+          value={null}
         />
+
         <FieldEntry
-          icon={<i className="fa-solid fa-users" />}
+          icon={<i className="ti ti-users" />}
           label="Employees"
           value={
             typeof record?.employees === "number"
@@ -406,16 +410,29 @@ function CompanyFields({ record }) {
               : null
           }
         />
-      </CollapsibleGroup>
-      <CollapsibleGroup title="Social">
         <FieldEntry
-          icon={<i className="fa-brands fa-linkedin" />}
+          icon={<i className="ti ti-target" />}
+          label="ICP"
+          value={
+            <>
+              <i className="ti ti-x" /> False
+            </>
+          }
+        />
+      </CollapsibleGroup>
+
+      <CollapsibleGroup title="Contact">
+        <FieldEntry
+          icon={<i className="ti ti-map-pin" />}
+          label="Address"
+          value={record?.city}
+        />
+
+        <FieldEntry
+          icon={<i className="ti ti-brand-linkedin" />}
           label="Linkedin"
         />
-        <FieldEntry
-          icon={<i className="fa-brands fa-x-twitter" />}
-          label="X"
-        />
+        <FieldEntry icon={<i className="ti ti-brand-x" />} label="X" />
       </CollapsibleGroup>
       <SystemFields record={record} />
       <LinkedSection
@@ -460,18 +477,18 @@ function NoteFields({ record }) {
     <>
       <CollapsibleGroup title="General">
         <FieldEntry
-          icon={<i className="fa-regular fa-pen-to-square" />}
+          icon={<i className="ti ti-edit" />}
           label="Body"
           value={
             record?.body ? (
-              <span className="block truncate text-[var(--txt)]">
+              <span className="block truncate text-[var(--font-color-primary)]">
                 {record.body.split("\n")[0]}
               </span>
             ) : null
           }
         />
         <FieldEntry
-          icon={<i className="fa-solid fa-arrow-up-right" />}
+          icon={<i className="ti ti-arrow-up-right" />}
           label="Relations"
           value={chips(relations)}
         />
@@ -496,11 +513,11 @@ function TabPill({ label, active, className = "" }) {
     <div
       className={`px-3 py-2 flex items-center gap-2 ${
         active
-          ? "border-b-2 border-[var(--txt)] text-[var(--txt)] -mb-px"
-          : "text-[var(--txt2)]"
+          ? "border-b-2 border-[var(--font-color-primary)] text-[var(--font-color-primary)] -mb-px"
+          : "text-[var(--font-color-secondary)]"
       } ${className}`}
     >
-      <i className={`fa-solid ${TAB_ICON[label] || "fa-circle"} text-[12px]`} />
+      <i className={`ti ${TAB_ICON[label] || "ti-circle"} text-[12px]`} />
       <span>{label}</span>
     </div>
   );
@@ -566,7 +583,7 @@ function Tabs({ tabs, active }) {
   const activeHidden = hiddenTabs.includes(active);
 
   return (
-    <div className="border-b border-[var(--bg3)] text-[13px] relative">
+    <div className="border-b border-[var(--border-color-medium)] text-[13px] relative">
       {/* Ghost row — measures full widths, never visible. */}
       <div
         aria-hidden="true"
@@ -578,9 +595,7 @@ function Tabs({ tabs, active }) {
             ref={(el) => (measureRefs.current[i] = el)}
             className="px-3 py-2 flex items-center gap-2"
           >
-            <i
-              className={`fa-solid ${TAB_ICON[label] || "fa-circle"} text-[12px]`}
-            />
+            <i className={`ti ${TAB_ICON[label] || "ti-circle"} text-[12px]`} />
             <span>{label}</span>
           </div>
         ))}
@@ -598,34 +613,46 @@ function Tabs({ tabs, active }) {
             <button
               type="button"
               onClick={() => setPopoverOpen((v) => !v)}
-              className={`px-3 py-2 flex items-center gap-1 bg-transparent border-0 cursor-pointer ${
+              className={`px-3 py-2 flex items-center gap-1 border-0 cursor-pointer whitespace-nowrap transition-colors ${
                 activeHidden
-                  ? "border-b-2 border-[var(--txt)] text-[var(--txt)] -mb-px"
-                  : "text-[var(--txt2)]"
+                  ? "border-b-2 border-[var(--font-color-primary)] text-[var(--font-color-primary)] -mb-px"
+                  : "text-[var(--font-color-secondary)]"
+              } ${
+                popoverOpen
+                  ? "bg-[var(--background-transparent-medium)]"
+                  : "bg-transparent hover:bg-[var(--background-transparent-light)]"
               }`}
             >
               <span>+{hiddenTabs.length} More</span>
-              <i className="fa-solid fa-chevron-down text-[10px]" />
+              <i className="ti ti-chevron-down text-[10px]" />
             </button>
-            {popoverOpen && (
-              <div className="absolute right-0 top-full mt-1 z-10 min-w-[160px] bg-[var(--bg)] border border-[var(--txt3)] rounded shadow-lg py-1 flex flex-col">
-                {hiddenTabs.map((label) => (
-                  <div
-                    key={label}
-                    className={`flex items-center gap-2 px-3 py-1.5 text-[12px] ${
-                      label === active
-                        ? "text-[var(--point)] font-medium"
-                        : "text-[var(--txt)]"
-                    }`}
-                  >
-                    <i
-                      className={`fa-solid ${TAB_ICON[label] || "fa-circle"} text-[12px]`}
-                    />
-                    <span>{label}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <AnimatePresence>
+              {popoverOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 4 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute right-0 top-full mt-1 z-10 min-w-[160px] bg-[var(--background-transparent-primary)] backdrop-blur-md border border-[var(--border-color-light)] rounded shadow-lg py-1 flex flex-col"
+                >
+                  {hiddenTabs.map((label) => (
+                    <div
+                      key={label}
+                      className={`flex items-center gap-2 px-3 py-1.5 text-[12px] ${
+                        label === active
+                          ? "text-[var(--color-blue)] font-medium"
+                          : "text-[var(--font-color-primary)]"
+                      }`}
+                    >
+                      <i
+                        className={`ti ${TAB_ICON[label] || "ti-circle"} text-[12px]`}
+                      />
+                      <span>{label}</span>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </span>
         )}
       </div>
@@ -644,21 +671,23 @@ function EmailMessage({ message }) {
       <ColorAvatar id={senderId} name={senderName} size="md" />
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-baseline gap-3">
-          <span className="font-semibold text-[var(--txt)]">{senderName}</span>
+          <span className="font-semibold text-[var(--font-color-primary)]">
+            {senderName}
+          </span>
           {message.receivedAt && (
-            <span className="text-[12px] text-[var(--txt3)] shrink-0">
+            <span className="text-[12px] text-[var(--font-color-tertiary)] shrink-0">
               {relativeTime(message.receivedAt)}
             </span>
           )}
         </div>
         {message.to && (
-          <div className="text-[12px] text-[var(--txt3)] flex items-center gap-1">
+          <div className="text-[12px] text-[var(--font-color-tertiary)] flex items-center gap-1">
             <span>{message.to}</span>
-            <i className="fa-solid fa-chevron-down text-[8px]" />
+            <i className="ti ti-chevron-down text-[8px]" />
           </div>
         )}
         {message.snippet && (
-          <p className="m-0 mt-3 text-[13px] text-[var(--txt)] whitespace-pre-wrap leading-relaxed">
+          <p className="m-0 mt-3 text-[13px] text-[var(--font-color-primary)] whitespace-pre-wrap leading-relaxed">
             {message.snippet}
           </p>
         )}
@@ -684,20 +713,21 @@ function EmailThreadCard({ task }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-md border border-[var(--bg3)] flex items-center justify-center shrink-0">
-          <i className="fa-regular fa-envelope text-[var(--txt2)] text-[14px]" />
+        <div className="w-9 h-9 rounded-md border border-[var(--border-color-medium)] flex items-center justify-center shrink-0">
+          <i className="ti ti-mail text-[var(--font-color-secondary)] text-[14px]" />
         </div>
         <div className="min-w-0">
-          <div className="font-semibold text-[14px] text-[var(--txt)]">
+          <div className="font-semibold text-[14px] text-[var(--font-color-primary)]">
             {subject}
           </div>
-          <div className="text-[12px] text-[var(--txt3)]">
+          <div className="text-[12px] text-[var(--font-color-tertiary)]">
             Email
-            {c.emailReceivedAt && ` · Received ${relativeTime(c.emailReceivedAt)}`}
+            {c.emailReceivedAt &&
+              ` · Received ${relativeTime(c.emailReceivedAt)}`}
           </div>
         </div>
       </div>
-      <div className="ml-3 pl-5 border-l border-[var(--bg3)] flex flex-col gap-6">
+      <div className="ml-3 pl-5 border-l border-[var(--border-color-medium)] flex flex-col gap-6">
         {messages.map((m, i) => (
           <EmailMessage key={i} message={m} />
         ))}
@@ -715,7 +745,7 @@ function EmailThread({ entity }) {
   );
   if (emails.length === 0) {
     return (
-      <div className="pt-8 text-center text-[12px] text-[var(--txt3)]">
+      <div className="pt-8 text-center text-[12px] text-[var(--font-color-tertiary)]">
         No emails yet.
       </div>
     );
@@ -732,11 +762,15 @@ function EmailThread({ entity }) {
 function TimelineEvent({ icon, time, children }) {
   return (
     <div className="flex items-start gap-3 py-2">
-      <span className="w-6 h-6 rounded-full bg-[var(--bg3)] inline-flex items-center justify-center text-[var(--txt2)] mt-0.5">
+      <span className="w-6 h-6 rounded-full bg-[var(--background-quaternary)] inline-flex items-center justify-center text-[var(--font-color-secondary)] mt-0.5">
         {icon}
       </span>
-      <div className="flex-1 text-[13px] text-[var(--txt)]">{children}</div>
-      <span className="text-[12px] text-[var(--txt3)]">{time}</span>
+      <div className="flex-1 text-[13px] text-[var(--font-color-primary)]">
+        {children}
+      </div>
+      <span className="text-[12px] text-[var(--font-color-tertiary)]">
+        {time}
+      </span>
     </div>
   );
 }
@@ -745,12 +779,12 @@ function Timeline({ name, createdAt, createdBy }) {
   const time = createdAt ? relativeTime(createdAt) : "recently";
   return (
     <div className="pt-4">
-      <div className="text-[12px] text-[var(--txt3)] py-2 border-b border-[var(--bg3)]">
+      <div className="text-[12px] text-[var(--font-color-tertiary)] py-2 border-b border-[var(--border-color-medium)]">
         Activity
       </div>
       <div className="pt-2">
         <TimelineEvent
-          icon={<i className="fa-solid fa-plus text-[10px]" />}
+          icon={<i className="ti ti-plus text-[10px]" />}
           time={time}
         >
           {name} was created
@@ -758,7 +792,9 @@ function Timeline({ name, createdAt, createdBy }) {
             <>
               {" "}
               by{" "}
-              <span className="text-[var(--txt2)]">{createdBy.objectName}</span>
+              <span className="text-[var(--font-color-secondary)]">
+                {createdBy.objectName}
+              </span>
             </>
           ) : null}
         </TimelineEvent>
@@ -769,11 +805,31 @@ function Timeline({ name, createdAt, createdBy }) {
 
 // Main -----------------------------------------------------------------------
 
-export function RecordDetail({ entity, onClose, defaultTab }) {
+// Lookup metadata used to render the record's header breadcrumb. Lives here
+// because TYPE_META and lookupRecord are private to this module.
+export function getRecordMeta(entity) {
+  const record = lookupRecord(entity);
+  const type = entity.objectType;
+  const fallback = {
+    icon: "ti-folder",
+    plural: type,
+    tone: "gray",
+    tabs: ["Timeline"],
+  };
+  const meta = TYPE_META[type] || fallback;
+  return {
+    icon: meta.icon,
+    plural: meta.plural,
+    tone: meta.tone || "gray",
+    name: recordName(record, entity.objectName),
+  };
+}
+
+export function RecordDetail({ entity, defaultTab }) {
   const record = lookupRecord(entity);
   const type = entity.objectType;
   const meta = TYPE_META[type] || {
-    icon: "fa-folder",
+    icon: "ti-folder",
     plural: type,
     tabs: ["Timeline"],
   };
@@ -785,26 +841,16 @@ export function RecordDetail({ entity, onClose, defaultTab }) {
     defaultTab && meta.tabs.includes(defaultTab) ? defaultTab : meta.tabs[0];
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col text-[var(--txt)] bg-[var(--bg)] text-[13px]">
-      <header className="shrink-0 px-2 py-2 border-b border-[var(--bg3)] flex items-center gap-2">
-        <IconButton onClick={onClose} ariaLabel="Close">
-          ×
-        </IconButton>
-        <i className={`fa-solid ${meta.icon} text-[12px] text-[var(--txt3)]`} />
-        <span className="text-[var(--txt2)]">{meta.plural}</span>
-        <span className="text-[var(--txt3)]">/</span>
-        <span className="font-medium">{name}</span>
-      </header>
-
+    <div className="flex-1 min-h-0 flex flex-col text-[var(--font-color-primary)] bg-[var(--background-primary)] text-[13px]">
       <div className="flex-1 min-h-0 overflow-hidden flex">
-        <aside className="w-[350px] shrink-0 overflow-y-auto p-4 flex flex-col gap-4 border-r border-[var(--bg3)]">
-          <div className="flex flex-col items-start gap-1">
-            <span className="w-12 h-12 rounded-full bg-emerald-800 inline-flex items-center justify-center text-[18px] font-semibold mb-2">
+        <aside className="w-[350px] shrink-0 overflow-y-auto p-4 flex flex-col gap-4 border-r border-[var(--border-color-medium)]">
+          <div className="flex flex-col items-center justify-center text-center gap-1">
+            <span className="w-12 h-12 rounded-full bg-[var(--color-green)] inline-flex items-center justify-center text-[18px] font-semibold mb-2">
               {letter}
             </span>
             <div className="font-semibold text-[15px]">{name}</div>
             {record?.createdAt && (
-              <div className="text-[12px] text-[var(--txt3)]">
+              <div className="text-[12px] text-[var(--font-color-tertiary)]">
                 Added {relativeTime(record.createdAt)}
               </div>
             )}
@@ -815,7 +861,7 @@ export function RecordDetail({ entity, onClose, defaultTab }) {
             {Fields ? (
               <Fields record={record} />
             ) : (
-              <div className="text-[12px] text-[var(--txt3)]">
+              <div className="text-[12px] text-[var(--font-color-tertiary)]">
                 No fields available for {type}.
               </div>
             )}
@@ -827,15 +873,15 @@ export function RecordDetail({ entity, onClose, defaultTab }) {
           <div className="min-w-[350px]">
             {active === "Note" || active === "Notes" ? (
               <div className="pt-4 text-[13px]">
-                <div className="text-[var(--txt2)] font-medium mb-2">
+                <div className="text-[var(--font-color-secondary)] font-medium mb-2">
                   {active}
                 </div>
                 {record?.body ? (
-                  <div className="min-h-[180px] p-3 rounded border border-[var(--bg3)] text-[var(--txt)] whitespace-pre-wrap leading-relaxed">
+                  <div className="min-h-[180px] p-3 rounded border border-[var(--border-color-medium)] text-[var(--font-color-primary)] whitespace-pre-wrap leading-relaxed">
                     {record.body}
                   </div>
                 ) : (
-                  <div className="min-h-[180px] p-3 rounded border border-[var(--bg3)] text-[var(--txt3)]">
+                  <div className="min-h-[180px] p-3 rounded border border-[var(--border-color-medium)] text-[var(--font-color-tertiary)]">
                     Type '/' for commands, '@' for mentions
                   </div>
                 )}
@@ -849,7 +895,7 @@ export function RecordDetail({ entity, onClose, defaultTab }) {
             ) : active === "Emails" ? (
               <EmailThread entity={entity} />
             ) : (
-              <div className="pt-8 text-center text-[12px] text-[var(--txt3)]">
+              <div className="pt-8 text-center text-[12px] text-[var(--font-color-tertiary)]">
                 No {active.toLowerCase()} yet.
               </div>
             )}
