@@ -62,6 +62,7 @@ const headerCellStyle = {
   borderBottom: "1px solid var(--border-color-medium)",
   fontSize: 12,
   whiteSpace: "nowrap",
+  cursor: "pointer",
 };
 
 function TaskHeader({ notificationLabel = "Notification", showBell = true }) {
