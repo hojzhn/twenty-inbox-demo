@@ -435,9 +435,9 @@ export default function App() {
                                 </>
                               ) : (
                                 <>
-                                  <div>Filter</div>
-                                  <div>Sort</div>
-                                  <div>Options</div>
+                                  <div className="cursor-pointer">Filter</div>
+                                  <div className="cursor-pointer">Sort</div>
+                                  <div className="cursor-pointer">Options</div>
                                 </>
                               )}
                             </div>
