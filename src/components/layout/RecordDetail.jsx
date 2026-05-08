@@ -854,16 +854,21 @@ export function RecordDetail({ entity, defaultTab }) {
   // On mobile, prepend a "Home" tab that hosts the field summary (since the
   // left aside is hidden in that layout).
   const tabs = isMobile ? ["Home", ...meta.tabs] : meta.tabs;
-  const [active, setActive] = useState(() =>
-    defaultTab && tabs.includes(defaultTab) ? defaultTab : tabs[0],
-  );
+  // Treat "Notes" and "Note" as equivalent so a generic notes-tab request
+  // lands on whichever variant the entity type uses.
+  const resolveTab = (req) => {
+    if (!req) return tabs[0];
+    if (tabs.includes(req)) return req;
+    if (req === "Notes" && tabs.includes("Note")) return "Note";
+    if (req === "Note" && tabs.includes("Notes")) return "Notes";
+    return tabs[0];
+  };
+  const [active, setActive] = useState(() => resolveTab(defaultTab));
   // If the entity changes (different record opened) or the tab list changes
   // (mobile flip adds/removes Home), drop selection that no longer exists.
   useEffect(() => {
     if (!tabs.includes(active)) {
-      setActive(
-        defaultTab && tabs.includes(defaultTab) ? defaultTab : tabs[0],
-      );
+      setActive(resolveTab(defaultTab));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entity.objectId, isMobile]);

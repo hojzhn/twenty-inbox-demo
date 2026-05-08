@@ -38,10 +38,8 @@ export function IconButton({ children, onClick, ariaLabel, active }) {
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      className={`inline-flex items-center justify-center w-7 h-7 p-0 border border-transparent text-[var(--font-color-secondary)] text-base rounded cursor-pointer transition-colors hover:bg-[var(--background-transparent-light)] active:bg-[var(--background-transparent-medium)] ${
-        active
-          ? "bg-[var(--background-transparent-medium)]"
-          : "bg-transparent"
+      className={`shrink-0 aspect-square flex items-center justify-center w-7 h-7 p-0 border border-transparent text-[var(--font-color-secondary)] text-base rounded cursor-pointer transition-colors hover:bg-[var(--background-transparent-light)] active:bg-[var(--background-transparent-medium)] ${
+        active ? "bg-[var(--background-transparent-medium)]" : "bg-transparent"
       }`}
     >
       {children}
@@ -85,7 +83,7 @@ function ChipAvatar({ id, name }) {
   );
 }
 
-export function Chip({ entity, onClick }) {
+export function Chip({ entity, onClick, className = "" }) {
   const ctxClick = useChipClick();
   const handler = onClick ?? (ctxClick ? () => ctxClick(entity) : undefined);
   const wrapped = handler
@@ -96,16 +94,19 @@ export function Chip({ entity, onClick }) {
     : undefined;
   return (
     <span
-      className={`${chipBase} ${handler ? "cursor-pointer" : ""}`}
+      className={`${chipBase} max-w-full min-w-0 ${
+        handler ? "cursor-pointer" : ""
+      } ${className}`}
       onClick={wrapped}
+      title={entity.objectName}
     >
       <ChipAvatar id={entity.objectId} name={entity.objectName} />
-      {entity.objectName}
+      <span className="min-w-0 truncate">{entity.objectName}</span>
     </span>
   );
 }
 
-export function TaskChip({ task, onRemove, onClick }) {
+export function TaskChip({ task, onRemove, onClick, className = "" }) {
   const ctxClick = useChipClick();
   const handler =
     onClick ??
@@ -125,13 +126,14 @@ export function TaskChip({ task, onRemove, onClick }) {
     : undefined;
   return (
     <span
-      className={`${chipBase} max-w-[280px] overflow-hidden ${
+      className={`${chipBase} max-w-full min-w-0 ${
         handler ? "cursor-pointer" : ""
-      }`}
+      } ${className}`}
       onClick={wrapped}
+      title={task.title}
     >
       <ChipAvatar id={task.id} name={task.title} />
-      <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+      <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
         {task.title}
       </span>
       {onRemove && (

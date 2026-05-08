@@ -180,6 +180,17 @@ export const PEOPLE = [
     phone: "+1 415 555 0177",
     city: "San Francisco",
   },
+  {
+    id: "person_casey",
+    name: "Casey Park",
+    title: "Creative Director, Northstar Creative",
+    employerId: "company_northstar",
+    formerEmployerIds: [],
+    opportunityIds: ["opp_marketing_refresh"],
+    email: "casey@northstar.studio",
+    phone: "+1 718 555 0143",
+    city: "Brooklyn",
+  },
 ];
 
 export const NOTES = [
@@ -194,14 +205,24 @@ export const NOTES = [
     body: "@marcus Weld failure on enclosure prototype, 3rd time this batch. Tooling problem at the CM, not a one-off. the jig is probably out of spec.\n\nWe need to flag with Wei before next pour. Recommend pausing the pilot run until QC signs off on a revised fixture since it could push the pilot delivery by 1–2 weeks if we end up retooling.",
   },
   {
+    id: "note_seed_pilot_contingency",
+    name: "Seed close gated on Gopuff pilot",
+    authorId: "user_marcus",
+    taggedOpportunityIds: ["opp_seed_round", "opp_gopuff_pilot"],
+    taggedCompanyIds: ["company_lerer_hippeau", "company_gopuff"],
+    taggedPersonIds: [],
+    createdAt: "2025-11-02T10:00:00-08:00",
+    body: "Lerer's term sheet bakes in a signed Gopuff pilot as a closing condition. If the pilot slips or falls through  we lose the round AND the revenue.\n\nAnything that pushes the Gopuff timeline (QC, SOC2, COI) is therefore round-risk, not just deal-risk. Treat all three as P0.\n\nIf the pilot dies, expect Lerer to walk; restarting fundraise from scratch with a dead pilot in the deck is not a great look.",
+  },
+  {
     id: "note_marketing_copy_review",
     name: "Marketing copy review · Northstar v3",
-    authorId: "user_marcus",
+    authorId: "person_casey",
     taggedOpportunityIds: ["opp_marketing_refresh"],
-    taggedCompanyIds: [],
-    taggedPersonIds: [],
+    taggedCompanyIds: ["company_northstar"],
+    taggedPersonIds: ["person_casey"],
     createdAt: "2025-11-03T14:00:00-08:00",
-    body: 'Northstar v3 copy — tighter than v2 but the hero claim is still vague. "Built for what\'s next" → swap for something concrete tied to the product.\n\nTodo: pull in benchmark numbers from the pilot deck and rewrite the secondary CTA.',
+    body: "Notes from our v3 copy walkthrough, capturing before I lose it:\n\n• Hero claim (\"Built for what's next\") lands too vague. You wanted something concrete tied to the product: I'll workshop 2–3 options.\n\n• Secondary CTA needs the benchmark numbers from the pilot deck. Could you forward the latest version when you get a sec?\n\n• Subhead pacing is good, no notes there.\n\nI'll have v4 ready by EOD Thursday for sign-off. @marcus flag anything I missed from the call.",
   },
 ];
 

@@ -137,15 +137,17 @@ function ResolveField({ task, coResolve }) {
         icon={<i className="ti ti-check" />}
         label="Resolve"
         value={
-          <div className="flex items-center justify-between gap-2 w-full">
-            <TaskChip task={task} />
-            <IconButton
-              onClick={() => setExpanded((v) => !v)}
-              ariaLabel={expanded ? "Hide resolve with" : "Show resolve with"}
-            >
-              {expanded ? "×" : "+"}
-            </IconButton>
-          </div>
+          <>
+            <div className="flex items-center justify-between gap-2 w-full">
+              <TaskChip task={task} className="flex-shrink-1" />
+              <IconButton
+                onClick={() => setExpanded((v) => !v)}
+                ariaLabel={expanded ? "Hide resolve with" : "Show resolve with"}
+              >
+                {expanded ? "×" : "+"}
+              </IconButton>
+            </div>
+          </>
         }
       />
       <AnimatePresence initial={false}>
@@ -286,7 +288,7 @@ export default function ActionPanel({ task, onClose, onMarkDone, doneIds }) {
               icon={<i className="ti ti-arrow-up-right" />}
               label="Relations"
               value={
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1  w-full">
                   {task.relations.map((r) => (
                     <Chip key={r.objectId} entity={r} />
                   ))}

@@ -82,6 +82,11 @@ const RECRUITER = {
   objectId: "person_recruiter_retailflow",
   objectName: "Recruiter at RetailFlow",
 };
+const CASEY = {
+  objectType: "Person",
+  objectId: "person_casey",
+  objectName: "Casey Park",
+};
 
 const OPP_GOPUFF = {
   objectType: "Opportunity",
@@ -129,6 +134,11 @@ const NOTE_MARKETING = {
   objectType: "Note",
   objectId: "note_marketing_copy_review",
   objectName: "Marketing copy review · Northstar v3",
+};
+const NOTE_SEED_CONTINGENCY = {
+  objectType: "Note",
+  objectId: "note_seed_pilot_contingency",
+  objectName: "Seed close gated on Gopuff pilot",
 };
 
 /** @type {Task[]} */
@@ -231,14 +241,19 @@ export const MARCUS_TASKS = [
 
   {
     id: "task_005",
-    title: "Review marketing copy from agency",
+    title: "Review note: marketing copy from agency",
     trigger: "mention",
     status: "open",
     read: false,
     createdAt: "2025-11-03T16:00:00-08:00",
-    createdBy: USER_MARCUS,
+    createdBy: CASEY,
     assigneeId: MARCUS_ID,
-    relations: [NOTE_MARKETING, OPP_MARKETING],
+    relations: [CASEY, NOTE_MARKETING, OPP_MARKETING],
+    context: {
+      mentionedBy: "Casey Park",
+      noteSnippet:
+        "I'll have v4 ready by EOD Thursday for sign-off. @marcus flag anything I missed from the call.",
+    },
   },
 
   {
@@ -274,7 +289,7 @@ export const MARCUS_TASKS = [
     createdAt: "2025-11-03T13:00:00-08:00",
     createdBy: USER_MARCUS,
     assigneeId: MARCUS_ID,
-    relations: [COMPANY_LERER, OPP_SEED],
+    relations: [COMPANY_LERER, OPP_SEED, NOTE_SEED_CONTINGENCY],
   },
 
   {

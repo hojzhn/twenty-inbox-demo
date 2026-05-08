@@ -73,7 +73,16 @@ export default function App() {
   const [view, setView] = useState(null);
 
   const navigate = (entity, options = {}) => {
-    setView({ entity, tab: options.tab });
+    // On mobile, default to the Notes tab (rather than Home / the type's
+    // first tab) when no specific tab is requested — chip clicks land users
+    // on something more useful than the field summary.
+    const tab =
+      options.tab !== undefined
+        ? options.tab
+        : isMobile
+          ? "Notes"
+          : undefined;
+    setView({ entity, tab });
     // On mobile, fold the action panel out of view so the record detail in the
     // center panel is visible. The user can summon it back via the bottom nav.
     if (isMobile) setActionPanelHidden(true);
@@ -199,17 +208,27 @@ export default function App() {
       <div
         style={{
           display: "flex",
+          flexDirection: "column",
           height: "100vh",
-          padding: 8,
-          gap: isMobile ? 0 : 8,
           overflow: "hidden",
           boxSizing: "border-box",
         }}
       >
-        <Sidebar
-          mobileOpen={mobileSidebarOpen}
-          onMobileClose={() => setMobileSidebarOpen(false)}
-        />
+        <div
+          style={{
+            display: "flex",
+            flex: 1,
+            minHeight: 0,
+            padding: 8,
+            gap: isMobile ? 0 : 8,
+            overflow: "hidden",
+            boxSizing: "border-box",
+          }}
+        >
+          <Sidebar
+            mobileOpen={mobileSidebarOpen}
+            onMobileClose={() => setMobileSidebarOpen(false)}
+          />
         <div
           style={{
             display: "flex",
@@ -282,43 +301,45 @@ export default function App() {
               overflow: "hidden",
             }}
           >
-            <AnimatePresence initial={false}>
-              {undoToast && (
-                <motion.div
-                  key="undo-toast"
-                  initial={{ opacity: 0, height: 0, y: -8 }}
-                  animate={{ opacity: 1, height: "auto", y: 0 }}
-                  exit={{ opacity: 0, height: 0, y: -8 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                  className="shrink-0 overflow-hidden"
-                >
-                  <div className="flex items-center justify-center gap-3 px-4 py-2 mb-2 rounded bg-[var(--accent-tertiary)] border border-[var(--color-blue)] text-[var(--color-blue)] text-[13px]">
-                    <span>
-                      Marked done ·{" "}
-                      <span className="font-medium">{undoToast.title}</span>
-                      {undoToast.extraCount > 0 && (
-                        <span> · +{undoToast.extraCount} more</span>
-                      )}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={undoMarkDone}
-                      className="px-2 py-0.5 rounded border border-[var(--color-blue)] text-[var(--color-blue)] bg-transparent cursor-pointer text-[12px] transition-colors hover:bg-[var(--color-blue)] hover:text-[var(--font-color-on-accent)]"
-                    >
-                      Undo
-                    </button>
-                    <button
-                      type="button"
-                      onClick={dismissUndoToast}
-                      aria-label="Dismiss"
-                      className="ml-1 bg-transparent border-0 text-[var(--color-blue)] cursor-pointer text-[14px] leading-none transition-opacity opacity-70 hover:opacity-100"
-                    >
-                      ×
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {!isMobile && (
+              <AnimatePresence initial={false}>
+                {undoToast && (
+                  <motion.div
+                    key="undo-toast"
+                    initial={{ opacity: 0, height: 0, y: -8 }}
+                    animate={{ opacity: 1, height: "auto", y: 0 }}
+                    exit={{ opacity: 0, height: 0, y: -8 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="shrink-0 overflow-hidden"
+                  >
+                    <div className="flex items-center justify-center gap-3 px-4 py-2 mb-2 rounded bg-[var(--accent-tertiary)] border border-[var(--color-blue)] text-[var(--color-blue)] text-[13px]">
+                      <span>
+                        Marked done ·{" "}
+                        <span className="font-medium">{undoToast.title}</span>
+                        {undoToast.extraCount > 0 && (
+                          <span> · +{undoToast.extraCount} more</span>
+                        )}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={undoMarkDone}
+                        className="px-2 py-0.5 rounded border border-[var(--color-blue)] text-[var(--color-blue)] bg-transparent cursor-pointer text-[12px] transition-colors hover:bg-[var(--color-blue)] hover:text-[var(--font-color-on-accent)]"
+                      >
+                        Undo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={dismissUndoToast}
+                        aria-label="Dismiss"
+                        className="ml-1 bg-transparent border-0 text-[var(--color-blue)] cursor-pointer text-[14px] leading-none transition-opacity opacity-70 hover:opacity-100"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            )}
 
             <div
               style={{
@@ -445,7 +466,7 @@ export default function App() {
                       animate={{ x: actionPanelHidden ? "100%" : 0 }}
                       exit={{ x: "100%" }}
                       transition={{ duration: 0.22, ease: "easeOut" }}
-                      className="fixed inset-0 z-50 bg-[var(--background-primary)] overflow-hidden"
+                      className="fixed top-0 left-0 right-0 bottom-[52px] z-50 bg-[var(--background-primary)] overflow-hidden"
                     >
                       <ActionPanel
                         task={selected}
@@ -481,9 +502,10 @@ export default function App() {
             </div>
           </div>
         </div>
+        </div>
 
         {isMobile && (
-          <div className="fixed bottom-0 left-0 right-0 z-[60] flex items-center justify-around gap-1 px-2 py-2 bg-[var(--background-secondary)] border-t border-[var(--border-color-medium)]">
+          <div className="shrink-0 z-[60] flex items-center justify-around gap-1 px-2 py-2 bg-[var(--background-secondary)] border-t border-[var(--border-color-medium)]">
             <button
               type="button"
               onClick={() => setMobileSidebarOpen((v) => !v)}
@@ -533,6 +555,49 @@ export default function App() {
                 } text-[16px]`}
               />
             </button>
+          </div>
+        )}
+
+        {/* Mobile-only: fixed-overlay version of the undo toast so it floats
+         * above the fullscreen action panel. Desktop renders the inline
+         * version inside the main column above. */}
+        {isMobile && (
+          <div className="fixed top-3 left-0 right-0 z-[70] flex justify-center pointer-events-none px-3">
+            <AnimatePresence initial={false}>
+              {undoToast && (
+                <motion.div
+                  key="undo-toast-mobile"
+                  initial={{ opacity: 0, y: -16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -16 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="pointer-events-auto flex items-center justify-center gap-3 px-4 py-2 rounded bg-[var(--accent-tertiary)] border border-[var(--color-blue)] text-[var(--color-blue)] text-[13px] shadow-lg max-w-full"
+                >
+                  <span className="truncate">
+                    Marked done ·{" "}
+                    <span className="font-medium">{undoToast.title}</span>
+                    {undoToast.extraCount > 0 && (
+                      <span> · +{undoToast.extraCount} more</span>
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={undoMarkDone}
+                    className="shrink-0 px-2 py-0.5 rounded border border-[var(--color-blue)] text-[var(--color-blue)] bg-transparent cursor-pointer text-[12px] transition-colors hover:bg-[var(--color-blue)] hover:text-[var(--font-color-on-accent)]"
+                  >
+                    Undo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={dismissUndoToast}
+                    aria-label="Dismiss"
+                    className="shrink-0 ml-1 bg-transparent border-0 text-[var(--color-blue)] cursor-pointer text-[14px] leading-none transition-opacity opacity-70 hover:opacity-100"
+                  >
+                    ×
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </div>

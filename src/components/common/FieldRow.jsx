@@ -17,7 +17,9 @@ export function FieldRow({ icon, label, value, placeholder }) {
       </div>
       <div className="text-xs text-[var(--font-color-primary)] min-w-0 flex items-stretch h-full">
         {isEmpty ? (
-          <span className="text-[var(--font-color-tertiary)]">{placeholder ?? label}</span>
+          <span className="text-[var(--font-color-tertiary)]">
+            {placeholder ?? label}
+          </span>
         ) : (
           value
         )}
