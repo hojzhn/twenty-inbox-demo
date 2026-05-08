@@ -209,7 +209,7 @@ export default function App() {
         style={{
           display: "flex",
           flexDirection: "column",
-          height: "100vh",
+          height: "100dvh",
           overflow: "hidden",
           boxSizing: "border-box",
         }}
