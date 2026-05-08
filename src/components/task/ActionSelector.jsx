@@ -1,17 +1,24 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ActionHeader } from "./ActionHeader";
-import { ACTIONS, ACTION_OPTIONS } from "../../actions/Actions";
+import { ACTIONS, getActionOptionSections } from "../../actions/Actions";
 
-export default function ActionSelector({ task, actionId, setActionId }) {
+export default function ActionSelector({
+  task,
+  actionId,
+  setActionId,
+  actionDraft,
+  onActionDraftChange,
+}) {
   const action = actionId ? ACTIONS[actionId] : null;
   const Body = action?.Body;
+  const sections = getActionOptionSections(task.trigger);
 
   return (
     <div className="flex flex-col gap-3">
       <ActionHeader
         actionId={actionId}
         setActionId={setActionId}
-        options={ACTION_OPTIONS}
+        sections={sections}
       />
       <AnimatePresence mode="wait" initial={false}>
         {Body && (
@@ -22,7 +29,11 @@ export default function ActionSelector({ task, actionId, setActionId }) {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
           >
-            <Body task={task} />
+            <Body
+              task={task}
+              actionDraft={actionDraft}
+              onActionDraftChange={onActionDraftChange}
+            />
           </motion.div>
         )}
       </AnimatePresence>

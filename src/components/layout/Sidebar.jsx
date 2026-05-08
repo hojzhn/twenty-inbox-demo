@@ -19,7 +19,7 @@ function ThemeToggle() {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       style={{ pointerEvents: "auto" }}
-      className="mx-2 mb-2 mt-auto flex items-center gap-2 px-2 py-1.5 rounded text-[13px] text-[var(--font-color-secondary)] hover:bg-[var(--background-secondary)] cursor-pointer bg-transparent border-0"
+      className="mx-2 mb-2 mt-auto flex items-center gap-2 px-2 py-1.5 rounded text-[13px] text-[var(--font-color-secondary)] hover:text-[var(--font-color-primary)] hover:bg-[var(--background-transparent-light)] active:bg-[var(--background-transparent-medium)] cursor-pointer bg-transparent border-0 transition-colors"
     >
       <span className="w-5 inline-flex justify-center">
         <i className={`ti ${isDark ? "ti-sun" : "ti-moon"}`} />

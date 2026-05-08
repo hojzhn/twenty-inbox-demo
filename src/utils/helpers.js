@@ -1,9 +1,9 @@
 export const DEFAULT_ACTION_BY_TRIGGER = {
   email_reply: "reply",
-  mention: "open_note",
-  date_trigger: "null",
-  workflow_alert: "null",
-  manual: null,
+  mention: "draft_email",
+  date_trigger: "draft_email",
+  workflow_alert: "draft_email",
+  manual: "draft_email",
 };
 
 export function getDefaultAction(trigger) {

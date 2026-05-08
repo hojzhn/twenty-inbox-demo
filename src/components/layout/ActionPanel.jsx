@@ -228,13 +228,45 @@ function ResolveField({ task, coResolve }) {
 
 // Panel ---------------------------------------------------------------------
 
-export default function ActionPanel({ task, onClose, onMarkDone, doneIds }) {
+function getSavedActionId(task, savedActionState) {
+  return savedActionState &&
+    Object.prototype.hasOwnProperty.call(savedActionState, "actionId")
+    ? savedActionState.actionId
+    : getDefaultAction(task.trigger);
+}
+
+export default function ActionPanel({
+  task,
+  onClose,
+  onMarkDone,
+  doneIds,
+  savedActionState,
+  onActionStateChange,
+}) {
   const [actionId, setActionId] = useState(() =>
-    getDefaultAction(task.trigger),
+    getSavedActionId(task, savedActionState),
   );
   useEffect(() => {
-    setActionId(getDefaultAction(task.trigger));
-  }, [task.id, task.trigger]);
+    setActionId(getSavedActionId(task, savedActionState));
+  }, [savedActionState?.actionId, task.id, task.trigger]);
+
+  function updateActionId(nextActionId) {
+    setActionId(nextActionId);
+    onActionStateChange?.({ actionId: nextActionId });
+  }
+
+  function updateActionDraft(patch) {
+    if (!actionId) return;
+    onActionStateChange?.({
+      drafts: {
+        ...(savedActionState?.drafts || {}),
+        [actionId]: {
+          ...(savedActionState?.drafts?.[actionId] || {}),
+          ...patch,
+        },
+      },
+    });
+  }
 
   const coResolve = useCoResolve(task, doneIds);
   const action = actionId ? ACTIONS[actionId] : null;
@@ -304,7 +336,9 @@ export default function ActionPanel({ task, onClose, onMarkDone, doneIds }) {
           <ActionSelector
             task={task}
             actionId={actionId}
-            setActionId={setActionId}
+            setActionId={updateActionId}
+            actionDraft={savedActionState?.drafts?.[actionId]}
+            onActionDraftChange={updateActionDraft}
           />
         </motion.div>
       </AnimatePresence>

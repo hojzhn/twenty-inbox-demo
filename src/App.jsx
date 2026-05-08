@@ -49,6 +49,7 @@ export default function App() {
   }, [isMobile]);
 
   const [selectedId, setSelectedId] = useState(null);
+  const [taskActionStates, setTaskActionStates] = useState({});
 
   // Reveal the action panel again whenever a different task is selected.
   useEffect(() => {
@@ -185,6 +186,7 @@ export default function App() {
   const totalShown = groups.reduce((acc, g) => acc + g.items.length, 0);
 
   const selected = tasks.find((t) => t.id === selectedId);
+  const selectedActionState = selected ? taskActionStates[selected.id] : null;
 
   const focusOption = focusId
     ? FOCUS_OPTIONS.find((o) => o.id === focusId)
@@ -197,6 +199,16 @@ export default function App() {
       next.add(id);
       return next;
     });
+  }
+
+  function updateTaskActionState(taskId, patch) {
+    setTaskActionStates((prev) => ({
+      ...prev,
+      [taskId]: {
+        ...(prev[taskId] || {}),
+        ...patch,
+      },
+    }));
   }
 
   return (
@@ -501,6 +513,10 @@ export default function App() {
                         <ActionPanel
                           task={selected}
                           doneIds={doneIds}
+                          savedActionState={selectedActionState}
+                          onActionStateChange={(patch) =>
+                            updateTaskActionState(selected.id, patch)
+                          }
                           onClose={() => setSelectedId(null)}
                           onMarkDone={(extraIds) =>
                             markDone(selected.id, extraIds)
@@ -520,6 +536,10 @@ export default function App() {
                           <ActionPanel
                             task={selected}
                             doneIds={doneIds}
+                            savedActionState={selectedActionState}
+                            onActionStateChange={(patch) =>
+                              updateTaskActionState(selected.id, patch)
+                            }
                             onClose={() => setSelectedId(null)}
                             onMarkDone={(extraIds) =>
                               markDone(selected.id, extraIds)

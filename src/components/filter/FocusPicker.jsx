@@ -12,20 +12,17 @@ export function FocusOptionItem({ option, selected, onClick }) {
       onClick={onClick}
       className="w-full flex items-center gap-2 px-3 py-1.5 text-xs bg-transparent border-0 cursor-pointer text-left"
     >
-      <span
-        className={`inline-flex items-center justify-center w-3.5 h-3.5 rounded border ${
-          selected
-            ? "bg-[var(--color-blue)] border-[var(--color-blue)]"
-            : "border-[var(--font-color-tertiary)] bg-transparent"
-        }`}
-      >
-        {selected && (
-          <i className="ti ti-check text-[8px] text-[var(--font-color-on-accent)]" />
-        )}
-      </span>
       <ColorAvatar id={option.id} name={option.name} />
       <span className="flex-1 min-w-0 flex items-center gap-1 overflow-hidden">
-        <span className="truncate text-[var(--font-color-primary)]">{option.name}</span>
+        <span
+          className={`truncate ${
+            selected
+              ? "text-[var(--color-blue)] font-medium"
+              : "text-[var(--font-color-primary)]"
+          }`}
+        >
+          {option.name}
+        </span>
         <span className="text-[var(--font-color-tertiary)] shrink-0">· {option.type}</span>
       </span>
     </button>

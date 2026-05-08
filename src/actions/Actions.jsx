@@ -17,7 +17,19 @@ function replySubject(task) {
   return /^re:\s*/i.test(subj) ? subj : `Re: ${subj}`;
 }
 
-function ReplyComposer({ task }) {
+function forwardSubject(task) {
+  const subj = task?.context?.emailSubject;
+  if (!subj) return task?.title || "";
+  return /^fwd?:\s*/i.test(subj) ? subj : `Fwd: ${subj}`;
+}
+
+function EmailComposer({ task, mode = "draft", draft, onDraftChange }) {
+  const isReply = mode === "reply";
+  const isForward = mode === "forward";
+  const subject = isReply ? replySubject(task) : isForward ? forwardSubject(task) : "";
+  const draftSubject = draft?.subject ?? subject;
+  const draftBody = draft?.body ?? "";
+
   return (
     <div>
       <FieldRow
@@ -37,7 +49,7 @@ function ReplyComposer({ task }) {
         value={
           <div className="flex items-center justify-between w-full gap-2">
             <div className="flex flex-wrap gap-1">
-              {task.target ? <Chip entity={task.target} /> : null}
+              {isReply && task.target ? <Chip entity={task.target} /> : null}
             </div>
             <span className="text-[11px] text-[var(--font-color-secondary)] cursor-pointer shrink-0">
               Cc/Bcc
@@ -51,7 +63,8 @@ function ReplyComposer({ task }) {
         label="Subject"
         value={
           <input
-            defaultValue={replySubject(task)}
+            value={draftSubject}
+            onChange={(e) => onDraftChange?.({ subject: e.target.value })}
             placeholder="Subject"
             className="flex-1 h-full min-w-0 bg-transparent border-0 outline-none placeholder:text-[var(--font-color-tertiary)]"
           />
@@ -59,6 +72,8 @@ function ReplyComposer({ task }) {
       />
 
       <textarea
+        value={draftBody}
+        onChange={(e) => onDraftChange?.({ body: e.target.value })}
         placeholder='Type something or press "/" to see commands'
         className="w-full min-h-[180px] p-3 box-border border-t border-[var(--font-color-tertiary)] text-[13px] text-[var(--font-color-primary)] placeholder:text-[var(--font-color-tertiary)] leading-relaxed resize-y outline-none bg-transparent"
       />
@@ -71,6 +86,39 @@ function ReplyComposer({ task }) {
         </button>
       </div>
     </div>
+  );
+}
+
+function DraftEmailComposer({ task, actionDraft, onActionDraftChange }) {
+  return (
+    <EmailComposer
+      task={task}
+      mode="draft"
+      draft={actionDraft}
+      onDraftChange={onActionDraftChange}
+    />
+  );
+}
+
+function ReplyComposer({ task, actionDraft, onActionDraftChange }) {
+  return (
+    <EmailComposer
+      task={task}
+      mode="reply"
+      draft={actionDraft}
+      onDraftChange={onActionDraftChange}
+    />
+  );
+}
+
+function ForwardComposer({ task, actionDraft, onActionDraftChange }) {
+  return (
+    <EmailComposer
+      task={task}
+      mode="forward"
+      draft={actionDraft}
+      onDraftChange={onActionDraftChange}
+    />
   );
 }
 
@@ -272,13 +320,23 @@ export function ReassignAction() {
 }
 
 export const ACTIONS = {
+  draft_email: {
+    label: "Draft email",
+    Body: DraftEmailComposer,
+    primary: { label: "Save draft and clear" },
+  },
   reply: {
     label: "Reply",
     Body: ReplyComposer,
     primary: { label: "Send and clear" },
   },
+  forward: {
+    label: "Forward",
+    Body: ForwardComposer,
+    primary: { label: "Forward and clear" },
+  },
   add_note: {
-    label: "Add note",
+    label: "Create Note",
     Body: AddNoteComposer,
     primary: { label: "Save and clear" },
   },
@@ -289,7 +347,25 @@ export const ACTIONS = {
   },
 };
 
-export const ACTION_OPTIONS = Object.entries(ACTIONS).map(([id, a]) => ({
-  id,
-  label: a.label,
-}));
+const BASIC_ACTION_IDS = ["draft_email", "add_note", "reassign"];
+
+const TRIGGER_ACTION_IDS = {
+  email_reply: ["reply", "forward"],
+};
+
+function toOptions(ids) {
+  return ids.map((id) => ({
+    id,
+    label: ACTIONS[id].label,
+  }));
+}
+
+export function getActionOptionSections(trigger) {
+  const triggerActions = TRIGGER_ACTION_IDS[trigger] || [];
+  return [
+    ...(triggerActions.length
+      ? [{ id: "trigger", options: toOptions(triggerActions) }]
+      : []),
+    { id: "basic", options: toOptions(BASIC_ACTION_IDS) },
+  ];
+}

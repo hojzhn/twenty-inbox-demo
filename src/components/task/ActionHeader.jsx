@@ -3,11 +3,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { IconButton } from "../common/Primitives";
 
 // Title + edit popover + clear. The chosen option's label becomes the heading.
-// `options` is `[{ id, label }]`.
+// `sections` is `[{ id, options: [{ id, label }] }]`.
 
-export function ActionHeader({ actionId, setActionId, options }) {
+export function ActionHeader({ actionId, setActionId, sections }) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const wrapperRef = useRef(null);
+  const options = sections.flatMap((section) => section.options);
   const selected = options.find((o) => o.id === actionId);
 
   useEffect(() => {
@@ -51,26 +52,37 @@ export function ActionHeader({ actionId, setActionId, options }) {
               transition={{ duration: 0.15, ease: "easeOut" }}
               className="absolute right-0 top-full mt-1 z-10 min-w-[180px] bg-[var(--background-transparent-primary)] backdrop-blur-md border border-[var(--border-color-light)] rounded shadow-lg py-1 flex flex-col"
             >
-              {options.map((o) => {
-                const isSel = actionId === o.id;
-                return (
-                  <button
-                    key={o.id}
-                    type="button"
-                    onClick={() => {
-                      setActionId(o.id);
-                      setPopoverOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-1.5 text-xs bg-transparent border-0 cursor-pointer ${
-                      isSel
-                        ? "text-[var(--color-blue)] font-medium"
-                        : "text-[var(--font-color-primary)]"
-                    }`}
-                  >
-                    {o.label}
-                  </button>
-                );
-              })}
+              {sections.map((section, sectionIndex) => (
+                <div
+                  key={section.id}
+                  className={
+                    sectionIndex > 0
+                      ? "border-t border-[var(--border-color-light)] pt-1 mt-1"
+                      : ""
+                  }
+                >
+                  {section.options.map((o) => {
+                    const isSel = actionId === o.id;
+                    return (
+                      <button
+                        key={o.id}
+                        type="button"
+                        onClick={() => {
+                          setActionId(o.id);
+                          setPopoverOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-1.5 text-xs bg-transparent border-0 cursor-pointer ${
+                          isSel
+                            ? "text-[var(--color-blue)] font-medium"
+                            : "text-[var(--font-color-primary)]"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
             </motion.div>
           )}
         </AnimatePresence>
