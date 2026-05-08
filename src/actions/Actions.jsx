@@ -73,6 +73,7 @@ function ReplyComposer({ task }) {
 
 export function AddNoteComposer({ task }) {
   const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
 
   return (
     <Section>
@@ -92,7 +93,15 @@ export function AddNoteComposer({ task }) {
       <FieldRow
         icon={<i className="ti ti-edit" />}
         label="Body"
-        value={<></>}
+        value={
+          <input
+            id="title"
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder='Type something or press "/" to see commands'
+            className="flex-1 h-full min-w-0 bg-transparent border-0 outline-none placeholder:text-[var(--font-color-tertiary)]"
+          />
+        }
       />
       <FieldRow
         icon={<i className="ti ti-arrow-up-right" />}
@@ -123,7 +132,9 @@ export function OpenNoteAction({ task }) {
   return (
     <Section>
       <SectionLabel>Open note</SectionLabel>
-      <p className="m-0 text-[13px] text-[var(--font-color-secondary)]">{noteRef.objectName}</p>
+      <p className="m-0 text-[13px] text-[var(--font-color-secondary)]">
+        {noteRef.objectName}
+      </p>
       <div className="flex gap-2 items-center">
         <Button variant="primary">Open full note</Button>
       </div>
