@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import {
   Button,
   Section,
   SectionLabel,
   Caption,
   Chip,
+  ColorAvatar,
 } from "../components/common/Primitives";
 import { FieldRow } from "../components/common/FieldRow";
+import { SearchPopover } from "../components/common/Popover";
 
 function replySubject(task) {
   const subj = task?.context?.emailSubject;
@@ -148,7 +151,71 @@ const DEFAULT_ASSIGNEE = {
   objectName: "Marcus",
 };
 
+// Volt teammates available as reassign targets. Marcus is the current user
+// and stays at the top; the rest are seeded so the popover has something
+// realistic to show.
+const TEAMMATES = [
+  { ...DEFAULT_ASSIGNEE, role: "Founder & CEO" },
+  {
+    objectType: "User",
+    objectId: "user_dana",
+    objectName: "Dana Singh",
+    role: "COO",
+  },
+  {
+    objectType: "User",
+    objectId: "user_raj",
+    objectName: "Raj Patel",
+    role: "Head of Engineering",
+  },
+  {
+    objectType: "User",
+    objectId: "user_lin",
+    objectName: "Lin Park",
+    role: "Operations Lead",
+  },
+  {
+    objectType: "User",
+    objectId: "user_jordan_volt",
+    objectName: "Jordan Reyes",
+    role: "QC Lead",
+  },
+  {
+    objectType: "User",
+    objectId: "user_emi",
+    objectName: "Emi Watanabe",
+    role: "Finance",
+  },
+];
+
+function AssigneeOption({ teammate, selected, onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full flex items-center gap-2 px-3 py-1.5 text-xs bg-transparent border-0 cursor-pointer text-left hover:bg-[var(--background-transparent-light)] transition-colors"
+    >
+      <ColorAvatar id={teammate.objectId} name={teammate.objectName} />
+      <span className="flex-1 min-w-0 flex items-center gap-1 overflow-hidden">
+        <span className="truncate text-[var(--font-color-primary)]">
+          {teammate.objectName}
+        </span>
+        {teammate.role && (
+          <span className="text-[var(--font-color-tertiary)] shrink-0">
+            · {teammate.role}
+          </span>
+        )}
+      </span>
+      {selected && (
+        <i className="ti ti-check text-[12px] text-[var(--color-blue)] shrink-0" />
+      )}
+    </button>
+  );
+}
+
 export function ReassignAction() {
+  const [assignee, setAssignee] = useState(DEFAULT_ASSIGNEE);
+  const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
 
   return (
@@ -156,7 +223,37 @@ export function ReassignAction() {
       <FieldRow
         icon={<i className="ti ti-user" />}
         label="Assignee"
-        value={<Chip entity={DEFAULT_ASSIGNEE} />}
+        value={
+          <span className="relative inline-flex items-center">
+            <Chip entity={assignee} onClick={() => setOpen((v) => !v)} />
+            <AnimatePresence>
+              {open && (
+                <SearchPopover
+                  align="left"
+                  width={260}
+                  items={TEAMMATES}
+                  searchPlaceholder="Search teammates"
+                  filterFn={(t, q) =>
+                    t.objectName.toLowerCase().includes(q) ||
+                    (t.role || "").toLowerCase().includes(q)
+                  }
+                  renderItem={(t) => (
+                    <AssigneeOption
+                      key={t.objectId}
+                      teammate={t}
+                      selected={t.objectId === assignee.objectId}
+                      onClick={() => {
+                        setAssignee(t);
+                        setOpen(false);
+                      }}
+                    />
+                  )}
+                  onClose={() => setOpen(false)}
+                />
+              )}
+            </AnimatePresence>
+          </span>
+        }
       />
       <FieldRow
         icon={<i className="ti ti-message-circle" />}
