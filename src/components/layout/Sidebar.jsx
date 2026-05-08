@@ -1,6 +1,8 @@
 // Static navigation panel — visual reference only, not interactive.
 
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useIsMobile } from "../../utils/useIsMobile";
 
 function ThemeToggle() {
   const [theme, setTheme] = useState(
@@ -42,6 +44,7 @@ const TONE_PAIRS = {
     fg: "var(--avatar-turquoise-fg)",
   },
   sky: { bg: "var(--avatar-sky-bg)", fg: "var(--avatar-sky-fg)" },
+  yellow: { bg: "var(--avatar-yellow-bg)", fg: "var(--avatar-yellow-fg)" },
   gray: {
     bg: "var(--background-quaternary)",
     fg: "var(--font-color-secondary)",
@@ -102,16 +105,9 @@ function SidebarSection({ title, children }) {
   );
 }
 
-export function Sidebar() {
+function SidebarContent() {
   return (
-    <nav
-      style={{
-        flex: "0 0 220px",
-        height: "100%",
-        overflowY: "auto",
-      }}
-      className="flex flex-col gap-4 text-[var(--font-color-primary)] text-[13px]"
-    >
+    <>
       <div className="flex items-center justify-between px-2 pt-2">
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-[var(--color-blue)] text-[var(--font-color-on-accent)] text-[11px] font-semibold">
@@ -200,6 +196,57 @@ export function Sidebar() {
       </SidebarSection>
 
       <ThemeToggle />
-    </nav>
+    </>
+  );
+}
+
+export function Sidebar({ mobileOpen = false, onMobileClose }) {
+  const isMobile = useIsMobile();
+
+  return (
+    <AnimatePresence initial={false}>
+      {!isMobile ? (
+        <motion.nav
+          key="sidebar-desktop"
+          initial={{ width: 0, opacity: 0 }}
+          animate={{ width: 220, opacity: 1 }}
+          exit={{ width: 0, opacity: 0 }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          style={{
+            flexShrink: 0,
+            height: "100%",
+            overflowY: "auto",
+            overflowX: "hidden",
+          }}
+          className="flex flex-col gap-4 text-[var(--font-color-primary)] text-[13px]"
+        >
+          <SidebarContent />
+        </motion.nav>
+      ) : null}
+      {isMobile && mobileOpen && (
+        <motion.div
+          key="sidebar-mobile-scrim"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+          onClick={onMobileClose}
+          className="fixed inset-0 z-[55] bg-black/40"
+        />
+      )}
+      {isMobile && mobileOpen && (
+        <motion.nav
+          key="sidebar-mobile-panel"
+          initial={{ x: "-100%" }}
+          animate={{ x: 0 }}
+          exit={{ x: "-100%" }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          style={{ width: 260 }}
+          className="fixed top-0 left-0 bottom-[52px] z-[56] p-2 bg-[var(--background-primary)] border-r border-[var(--border-color-medium)] flex flex-col gap-4 text-[var(--font-color-primary)] text-[13px] overflow-y-auto"
+        >
+          <SidebarContent />
+        </motion.nav>
+      )}
+    </AnimatePresence>
   );
 }

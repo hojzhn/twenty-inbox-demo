@@ -4,7 +4,7 @@ import { FOCUS_OPTIONS } from "../../data/Graph";
 import { SearchPopover } from "../common/Popover";
 import { ColorAvatar } from "../common/Primitives";
 
-function FocusOptionItem({ option, selected, onClick }) {
+export function FocusOptionItem({ option, selected, onClick }) {
   return (
     <button
       type="button"
@@ -55,7 +55,7 @@ export function FocusPicker({ value, onChange }) {
       <AnimatePresence>
         {open && (
           <SearchPopover
-            align="right"
+            align="center"
             items={FOCUS_OPTIONS}
             filterFn={(o, q) => o.name.toLowerCase().includes(q)}
             renderItem={(o) => (

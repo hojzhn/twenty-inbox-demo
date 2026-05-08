@@ -111,6 +111,8 @@
   --avatar-red-fg: #c62a2f;
   --avatar-sky-bg: #e1f6fd;
   --avatar-sky-fg: #00749e;
+  --avatar-yellow-bg: #fffbd1;
+  --avatar-yellow-fg: #9e6c00;
 
   /* Box shadows */
   --box-shadow-light: 0px 2px 4px 0px rgba(0, 0, 0, 0.039),
@@ -218,6 +220,8 @@
   --avatar-red-fg: #ff8b87;
   --avatar-sky-bg: #112d3c;
   --avatar-sky-fg: #2ec8ee;
+  --avatar-yellow-bg: #2b290e;
+  --avatar-yellow-fg: #f5e147;
 
   --box-shadow-light: 0px 2px 4px 0px rgba(0, 0, 0, 0.04),
     0px 0px 4px 0px rgba(0, 0, 0, 0.08);

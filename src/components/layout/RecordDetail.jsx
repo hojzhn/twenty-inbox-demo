@@ -4,6 +4,7 @@ import { Chip, ColorAvatar, chipBase } from "../common/Primitives";
 import { relativeTime } from "../../utils/time";
 import { MARCUS_TASKS } from "../../data/Tasks";
 import { COMPANIES, OPPORTUNITIES, PEOPLE, NOTES } from "../../data/Graph";
+import { useIsMobile } from "../../utils/useIsMobile";
 
 // Type metadata --------------------------------------------------------------
 
@@ -53,6 +54,7 @@ const TYPE_META = {
 };
 
 const TAB_ICON = {
+  Home: "ti-home",
   Timeline: "ti-device-desktop",
   Tasks: "ti-checkbox",
   Notes: "ti-file-text",
@@ -508,10 +510,12 @@ const FIELDS_BY_TYPE = {
 
 // Tabs / timeline ------------------------------------------------------------
 
-function TabPill({ label, active, className = "" }) {
+function TabPill({ label, active, onClick, className = "" }) {
   return (
-    <div
-      className={`px-3 py-2 flex items-center gap-2 ${
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-3 py-2 flex items-center gap-2 cursor-pointer border-0 bg-transparent transition-colors hover:bg-[var(--background-transparent-light)] ${
         active
           ? "border-b-2 border-[var(--font-color-primary)] text-[var(--font-color-primary)] -mb-px"
           : "text-[var(--font-color-secondary)]"
@@ -519,15 +523,14 @@ function TabPill({ label, active, className = "" }) {
     >
       <i className={`ti ${TAB_ICON[label] || "ti-circle"} text-[12px]`} />
       <span>{label}</span>
-    </div>
+    </button>
   );
 }
 
 // Render all tabs in a ghost row to measure widths, then keep as many as fit
 // in the container — reserving space for a "+N More" trigger when needed.
-// The trigger opens a popover listing the overflow tabs. The tabs themselves
-// remain non-interactive; only the "+N More" button is clickable.
-function Tabs({ tabs, active }) {
+// The trigger opens a popover listing the overflow tabs.
+function Tabs({ tabs, active, onSelect }) {
   const containerRef = useRef(null);
   const measureRefs = useRef([]);
   const moreWrapperRef = useRef(null);
@@ -606,7 +609,12 @@ function Tabs({ tabs, active }) {
         className="flex items-center gap-1 min-w-0 overflow-hidden"
       >
         {visibleTabs.map((label) => (
-          <TabPill key={label} label={label} active={label === active} />
+          <TabPill
+            key={label}
+            label={label}
+            active={label === active}
+            onClick={() => onSelect?.(label)}
+          />
         ))}
         {hiddenTabs.length > 0 && (
           <span ref={moreWrapperRef} className="relative ml-auto">
@@ -636,9 +644,14 @@ function Tabs({ tabs, active }) {
                   className="absolute right-0 top-full mt-1 z-10 min-w-[160px] bg-[var(--background-transparent-primary)] backdrop-blur-md border border-[var(--border-color-light)] rounded shadow-lg py-1 flex flex-col"
                 >
                   {hiddenTabs.map((label) => (
-                    <div
+                    <button
                       key={label}
-                      className={`flex items-center gap-2 px-3 py-1.5 text-[12px] ${
+                      type="button"
+                      onClick={() => {
+                        onSelect?.(label);
+                        setPopoverOpen(false);
+                      }}
+                      className={`w-full text-left flex items-center gap-2 px-3 py-1.5 text-[12px] cursor-pointer border-0 bg-transparent transition-colors hover:bg-[var(--background-transparent-light)] ${
                         label === active
                           ? "text-[var(--color-blue)] font-medium"
                           : "text-[var(--font-color-primary)]"
@@ -648,7 +661,7 @@ function Tabs({ tabs, active }) {
                         className={`ti ${TAB_ICON[label] || "ti-circle"} text-[12px]`}
                       />
                       <span>{label}</span>
-                    </div>
+                    </button>
                   ))}
                 </motion.div>
               )}
@@ -826,6 +839,7 @@ export function getRecordMeta(entity) {
 }
 
 export function RecordDetail({ entity, defaultTab }) {
+  const isMobile = useIsMobile();
   const record = lookupRecord(entity);
   const type = entity.objectType;
   const meta = TYPE_META[type] || {
@@ -837,68 +851,105 @@ export function RecordDetail({ entity, defaultTab }) {
   const letter = name.charAt(0).toUpperCase();
   const Fields = FIELDS_BY_TYPE[type];
 
-  const active =
-    defaultTab && meta.tabs.includes(defaultTab) ? defaultTab : meta.tabs[0];
+  // On mobile, prepend a "Home" tab that hosts the field summary (since the
+  // left aside is hidden in that layout).
+  const tabs = isMobile ? ["Home", ...meta.tabs] : meta.tabs;
+  const [active, setActive] = useState(() =>
+    defaultTab && tabs.includes(defaultTab) ? defaultTab : tabs[0],
+  );
+  // If the entity changes (different record opened) or the tab list changes
+  // (mobile flip adds/removes Home), drop selection that no longer exists.
+  useEffect(() => {
+    if (!tabs.includes(active)) {
+      setActive(
+        defaultTab && tabs.includes(defaultTab) ? defaultTab : tabs[0],
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entity.objectId, isMobile]);
+
+  const fieldsBody = (
+    <>
+      <div className="flex flex-col items-center justify-center text-center gap-1 mb-4">
+        <span className="w-12 h-12 rounded-full bg-[var(--color-green)] inline-flex items-center justify-center text-[18px] font-semibold mb-2">
+          {letter}
+        </span>
+        <div className="font-semibold text-[15px]">{name}</div>
+        {record?.createdAt && (
+          <div className="text-[12px] text-[var(--font-color-tertiary)]">
+            Added {relativeTime(record.createdAt)}
+          </div>
+        )}
+      </div>
+      <div>
+        <div className="font-semibold mb-2">Fields</div>
+        {Fields ? (
+          <Fields record={record} />
+        ) : (
+          <div className="text-[12px] text-[var(--font-color-tertiary)]">
+            No fields available for {type}.
+          </div>
+        )}
+      </div>
+    </>
+  );
 
   return (
     <div className="flex-1 min-h-0 flex flex-col text-[var(--font-color-primary)] bg-[var(--background-primary)] text-[13px]">
       <div className="flex-1 min-h-0 overflow-hidden flex">
-        <aside className="w-[350px] shrink-0 overflow-y-auto p-4 flex flex-col gap-4 border-r border-[var(--border-color-medium)]">
-          <div className="flex flex-col items-center justify-center text-center gap-1">
-            <span className="w-12 h-12 rounded-full bg-[var(--color-green)] inline-flex items-center justify-center text-[18px] font-semibold mb-2">
-              {letter}
-            </span>
-            <div className="font-semibold text-[15px]">{name}</div>
-            {record?.createdAt && (
-              <div className="text-[12px] text-[var(--font-color-tertiary)]">
-                Added {relativeTime(record.createdAt)}
-              </div>
-            )}
-          </div>
+        <motion.aside
+          initial={false}
+          animate={{
+            width: isMobile ? 0 : 350,
+            opacity: isMobile ? 0 : 1,
+          }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          style={{ flexShrink: 0, overflowY: "auto", overflowX: "hidden" }}
+          className="border-r border-[var(--border-color-medium)]"
+        >
+          <div className="w-[350px] p-4 flex flex-col gap-4">{fieldsBody}</div>
+        </motion.aside>
 
-          <div>
-            <div className="font-semibold mb-2">Fields</div>
-            {Fields ? (
-              <Fields record={record} />
-            ) : (
-              <div className="text-[12px] text-[var(--font-color-tertiary)]">
-                No fields available for {type}.
-              </div>
-            )}
+        <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
+          {/* Tabs strip — stays put, never scrolls. */}
+          <div className="shrink-0 px-4 pt-4">
+            <Tabs tabs={tabs} active={active} onSelect={setActive} />
           </div>
-        </aside>
-
-        <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden p-4">
-          <Tabs tabs={meta.tabs} active={active} />
-          <div className="min-w-[350px]">
-            {active === "Note" || active === "Notes" ? (
-              <div className="pt-4 text-[13px]">
-                <div className="text-[var(--font-color-secondary)] font-medium mb-2">
-                  {active}
+          {/* Tab content — scrolls both axes; horizontal scrollbar pinned to
+           * the bottom of this region rather than the whole record detail. */}
+          <div className="flex-1 min-h-0 overflow-auto p-4">
+            <div className="md:min-w-[350px]">
+              {active === "Home" ? (
+                <div>{fieldsBody}</div>
+              ) : active === "Note" || active === "Notes" ? (
+                <div className="text-[13px]">
+                  <div className="text-[var(--font-color-secondary)] font-medium mb-2">
+                    {active}
+                  </div>
+                  {record?.body ? (
+                    <div className="min-h-[180px] p-3 rounded border border-[var(--border-color-medium)] text-[var(--font-color-primary)] whitespace-pre-wrap leading-relaxed">
+                      {record.body}
+                    </div>
+                  ) : (
+                    <div className="min-h-[180px] p-3 rounded border border-[var(--border-color-medium)] text-[var(--font-color-tertiary)]">
+                      Type '/' for commands, '@' for mentions
+                    </div>
+                  )}
                 </div>
-                {record?.body ? (
-                  <div className="min-h-[180px] p-3 rounded border border-[var(--border-color-medium)] text-[var(--font-color-primary)] whitespace-pre-wrap leading-relaxed">
-                    {record.body}
-                  </div>
-                ) : (
-                  <div className="min-h-[180px] p-3 rounded border border-[var(--border-color-medium)] text-[var(--font-color-tertiary)]">
-                    Type '/' for commands, '@' for mentions
-                  </div>
-                )}
-              </div>
-            ) : active === "Timeline" ? (
-              <Timeline
-                name={name}
-                createdAt={record?.createdAt}
-                createdBy={record?.createdBy}
-              />
-            ) : active === "Emails" ? (
-              <EmailThread entity={entity} />
-            ) : (
-              <div className="pt-8 text-center text-[12px] text-[var(--font-color-tertiary)]">
-                No {active.toLowerCase()} yet.
-              </div>
-            )}
+              ) : active === "Timeline" ? (
+                <Timeline
+                  name={name}
+                  createdAt={record?.createdAt}
+                  createdBy={record?.createdBy}
+                />
+              ) : active === "Emails" ? (
+                <EmailThread entity={entity} />
+              ) : (
+                <div className="pt-4 text-center text-[12px] text-[var(--font-color-tertiary)]">
+                  No {active.toLowerCase()} yet.
+                </div>
+              )}
+            </div>
           </div>
         </main>
       </div>

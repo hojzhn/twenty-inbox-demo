@@ -85,14 +85,29 @@ export function SearchPopover({
     <motion.div
       ref={ref}
       onClick={(e) => e.stopPropagation()}
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 4 }}
+      // For center alignment we set `left: 50%` on the box and shift it back
+      // by half its own width via framer's `x` (in pixels). Composing x with
+      // y this way lets framer animate y while keeping x as a static offset.
+      initial={{ opacity: 0, y: 4, x: align === "center" ? -width / 2 : 0 }}
+      animate={{ opacity: 1, y: 0, x: align === "center" ? -width / 2 : 0 }}
+      exit={{ opacity: 0, y: 4, x: align === "center" ? -width / 2 : 0 }}
       transition={{ duration: 0.15, ease: "easeOut" }}
-      className={`absolute ${
-        align === "right" ? "right-0" : "left-0"
-      } top-full mt-1 z-10 bg-[var(--background-transparent-primary)] backdrop-blur-md border border-[var(--border-color-light)] rounded shadow-lg flex flex-col overflow-hidden`}
-      style={{ width }}
+      className="z-50 bg-[var(--background-transparent-primary)] backdrop-blur-md border border-[var(--border-color-light)] rounded shadow-lg flex flex-col overflow-hidden"
+      style={{
+        // Force absolute positioning via inline style so Tailwind class
+        // ordering / framer-motion can't interfere. `top: 100%` puts the
+        // popover just below the trigger; the horizontal anchor switches
+        // between left, right, and center (50%) per `align`.
+        position: "absolute",
+        top: "100%",
+        marginTop: 4,
+        ...(align === "right"
+          ? { right: 0 }
+          : align === "center"
+            ? { left: "50%" }
+            : { left: 0 }),
+        width,
+      }}
     >
       {showSearch && (
         <div className="px-3 py-2 border-b border-[var(--border-color-light)]">

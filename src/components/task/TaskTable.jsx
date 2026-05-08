@@ -1,5 +1,6 @@
 import { relativeTime } from "../../utils/time";
 import { Chip } from "../common/Primitives";
+import { ToneIcon } from "../layout/Sidebar";
 
 const shortName = (name) => (name || "").split(" · ")[0];
 
@@ -9,9 +10,32 @@ function RelationChip({ entity }) {
   );
 }
 
+// Per-trigger icon + tone, matching Twenty's notification convention.
+const TRIGGER_META = {
+  email_reply: { icon: "ti-mail", tone: "blue" },
+  mention: { icon: "ti-at", tone: "orange" },
+  date_trigger: { icon: "ti-clock", tone: "yellow" },
+  workflow_alert: { icon: "ti-alert-circle", tone: "gray" },
+  manual: { icon: "ti-checkbox", tone: "green" },
+};
+
+function TriggerIcon({ trigger, dimmed }) {
+  const meta = TRIGGER_META[trigger] || TRIGGER_META.manual;
+  return (
+    <span
+      style={{ opacity: dimmed ? 0.5 : 1 }}
+      className="inline-flex transition-opacity"
+    >
+      <ToneIcon tone={meta.tone} size={24} fontSize={12}>
+        <i className={`ti ${meta.icon}`} />
+      </ToneIcon>
+    </span>
+  );
+}
+
 const cellStyle = (width) => ({
   padding: "8px 8px 8px 0",
-  verticalAlign: "top",
+  verticalAlign: "middle",
   whiteSpace: "nowrap",
   ...(width != null ? { width } : {}),
 });
@@ -20,8 +44,10 @@ function TaskColumns() {
   return (
     <colgroup>
       <col style={{ width: 16 }} />
+      <col style={{ width: 32 }} />
+      {/* Notification — no width, gets all leftover space (the largest column). */}
       <col />
-      <col style={{ width: 300 }} />
+      <col style={{ width: 200 }} />
       <col style={{ width: 150 }} />
       <col style={{ width: 100 }} />
     </colgroup>
@@ -42,6 +68,7 @@ function TaskHeader({ notificationLabel = "Notification", showBell = true }) {
   return (
     <thead>
       <tr>
+        <th style={headerCellStyle} />
         <th style={headerCellStyle} />
         <th style={headerCellStyle}>
           {showBell && <i className="ti ti-bell mr-1" />}
@@ -79,6 +106,9 @@ function TaskRow({ task, selected, onSelect }) {
       >
         {isUnread ? "●" : "　"}
       </td>
+      <td style={{ ...cellStyle(32), verticalAlign: "middle" }}>
+        <TriggerIcon trigger={task.trigger} dimmed={!isUnread} />
+      </td>
       <td
         style={{
           ...cellStyle(),
@@ -89,6 +119,7 @@ function TaskRow({ task, selected, onSelect }) {
         }}
       >
         <div
+          className="text-sm"
           style={{
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -142,11 +173,14 @@ function TaskRow({ task, selected, onSelect }) {
 }
 
 const tableStyle = {
-  width: "max-content",
-  // Subtract the table's own horizontal margin (mx-2 = 16px total) so the table
-  // doesn't overflow the scroll container when its content already fits.
-  minWidth: "calc(100% - 32px)",
+  // Fill the scroll container so the notification column gets the leftover
+  // space. The 32px subtraction accounts for the table's own mx-4 margin so
+  // it doesn't overflow the container by that margin.
+  // 16+32+200+150+100 = 498 fixed; remaining (~190px+) goes to notification.
+  width: "calc(100% - 32px)",
+  minWidth: 688,
   borderCollapse: "collapse",
+  tableLayout: "fixed",
 };
 
 export function TaskTable({ groups, selectedId, onSelect }) {

@@ -24,7 +24,7 @@ import {
 
 // Co-resolve state ----------------------------------------------------------
 
-function useCoResolve(task) {
+function useCoResolve(task, doneIds) {
   const [ids, setIds] = useState(() => new Set());
 
   useEffect(() => {
@@ -35,14 +35,17 @@ function useCoResolve(task) {
     const primary = task.target || task.relations?.[0] || task.createdBy;
     return MARCUS_TASKS.filter(
       (t) =>
-        t.id !== task.id && t.status !== "done" && t.status !== "dismissed",
+        t.id !== task.id &&
+        t.status !== "done" &&
+        t.status !== "dismissed" &&
+        !doneIds?.has(t.id),
     )
       .map((t) => ({
         task: t,
         dist: primary ? taskDistance(t, primary.objectId) : Infinity,
       }))
       .sort((a, b) => a.dist - b.dist);
-  }, [task]);
+  }, [task, doneIds]);
 
   const tasks = useMemo(
     () =>
@@ -223,7 +226,7 @@ function ResolveField({ task, coResolve }) {
 
 // Panel ---------------------------------------------------------------------
 
-export default function ActionPanel({ task, onClose, onMarkDone }) {
+export default function ActionPanel({ task, onClose, onMarkDone, doneIds }) {
   const [actionId, setActionId] = useState(() =>
     getDefaultAction(task.trigger),
   );
@@ -231,16 +234,18 @@ export default function ActionPanel({ task, onClose, onMarkDone }) {
     setActionId(getDefaultAction(task.trigger));
   }, [task.id, task.trigger]);
 
-  const coResolve = useCoResolve(task);
+  const coResolve = useCoResolve(task, doneIds);
   const action = actionId ? ACTIONS[actionId] : null;
 
   return (
     <div className="h-full flex flex-col rounded-lg border border-[var(--border-color-medium)] text-[var(--font-color-primary)] bg-[var(--background-primary)] text-[13px] leading-relaxed">
-      <header className="shrink-0 bg-[var(--background-secondary)] pt-4 pb-3 border-b border-[var(--border-color-medium)] flex flex-col gap-2">
+      <header className="shrink-0 bg-[var(--background-secondary)] pt-4 pb-3 px-4 md:px-0 border-b border-[var(--border-color-medium)] flex flex-col gap-2 relative">
         <div className="flex justify-start items-center gap-3">
-          <IconButton onClick={onClose} ariaLabel="Close">
-            ×
-          </IconButton>
+          <span className="hidden md:inline-flex  ml-4">
+            <IconButton onClick={onClose} ariaLabel="Close">
+              ×
+            </IconButton>
+          </span>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={task.id}
@@ -254,6 +259,11 @@ export default function ActionPanel({ task, onClose, onMarkDone }) {
               <Caption>{relativeTime(task.createdAt)}</Caption>
             </motion.div>
           </AnimatePresence>
+        </div>
+        <div className="md:hidden absolute top-3 right-3">
+          <IconButton onClick={onClose} ariaLabel="Close">
+            ×
+          </IconButton>
         </div>
       </header>
 
@@ -305,7 +315,7 @@ export default function ActionPanel({ task, onClose, onMarkDone }) {
         <motion.button
           layout
           type="button"
-          onClick={onMarkDone}
+          onClick={() => onMarkDone(coResolve.tasks.map((t) => t.id))}
           transition={{ layout: { duration: 0.2, ease: "easeOut" } }}
           className="inline-flex items-center gap-1 px-3 py-1.5 rounded text-xs font-medium leading-snug transition-colors bg-[var(--color-blue)] text-[var(--font-color-on-accent)] border border-[var(--color-blue)] hover:bg-[var(--accent-10)] hover:border-[var(--accent-10)] active:bg-[var(--accent-11)] cursor-pointer overflow-hidden"
         >

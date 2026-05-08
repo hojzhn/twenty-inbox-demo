@@ -9,6 +9,7 @@ import { TaskTable } from "./components/task/TaskTable";
 import { Sidebar, ToneIcon } from "./components/layout/Sidebar";
 import { RecordDetail, getRecordMeta } from "./components/layout/RecordDetail";
 import { ChipClickContext } from "./context/ChipContext";
+import { useIsMobile } from "./utils/useIsMobile";
 
 const MAX_FOCUS_HOPS = 2;
 const HOP_LABELS = ["Direct", "1 hop away", "2 hops away"];
@@ -32,7 +33,27 @@ function buildGroups(tasks, focusId) {
 }
 
 export default function App() {
+  const isMobile = useIsMobile();
+  // Mobile-only: sidebar slides in as overlay when toggled from the bottom nav.
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  // Mobile-only: temporarily slide the action panel off-screen so the user can
+  // see the center panel beneath, without clearing `selected`.
+  const [actionPanelHidden, setActionPanelHidden] = useState(false);
+
+  // Reset mobile-only UI state when crossing back into desktop layout.
+  useEffect(() => {
+    if (!isMobile) {
+      setMobileSidebarOpen(false);
+      setActionPanelHidden(false);
+    }
+  }, [isMobile]);
+
   const [selectedId, setSelectedId] = useState(null);
+
+  // Reveal the action panel again whenever a different task is selected.
+  useEffect(() => {
+    setActionPanelHidden(false);
+  }, [selectedId]);
   const [focusId, setFocusId] = useState(null);
   const [introOpen, setIntroOpen] = useState(true);
   const [doneIds, setDoneIds] = useState(() => new Set());
@@ -51,9 +72,18 @@ export default function App() {
   // AnimatePresence keeps the previous view mounted during exit; no shadow state needed.
   const [view, setView] = useState(null);
 
-  const navigate = (entity, options = {}) =>
+  const navigate = (entity, options = {}) => {
     setView({ entity, tab: options.tab });
-  const closeView = () => setView(null);
+    // On mobile, fold the action panel out of view so the record detail in the
+    // center panel is visible. The user can summon it back via the bottom nav.
+    if (isMobile) setActionPanelHidden(true);
+  };
+  const closeView = () => {
+    setView(null);
+    // Stay folded on mobile — closing the record detail should reveal the
+    // inbox table, not the action panel. The user can summon it back via the
+    // bottom nav's panel toggle.
+  };
 
   const [readIds, setReadIds] = useState(
     new Set(MARCUS_TASKS.filter((t) => t.read).map((t) => t.id)),
@@ -68,23 +98,37 @@ export default function App() {
     [readIds, doneIds],
   );
 
-  function markDone(id) {
-    // Pick the adjacent task to keep the action panel populated.
-    // Prefer the newer one (visually above); fall back to the older
-    // one below if the removed task was already at the top.
+  function markDone(primaryId, extraIds = []) {
+    const allIds = [primaryId, ...extraIds.filter((id) => id !== primaryId)];
+    const doneSet = new Set(allIds);
+
+    // Pick the next adjacent task that's NOT in the bulk-done set. Prefer the
+    // newer one (visually above); fall back to older below.
     const flat = groups.flatMap((g) => g.items);
-    const idx = flat.findIndex((t) => t.id === id);
+    const idx = flat.findIndex((t) => t.id === primaryId);
     let nextId = null;
     if (idx !== -1) {
-      if (idx > 0) nextId = flat[idx - 1].id;
-      else if (idx + 1 < flat.length) nextId = flat[idx + 1].id;
+      for (let i = idx - 1; i >= 0; i--) {
+        if (!doneSet.has(flat[i].id)) {
+          nextId = flat[i].id;
+          break;
+        }
+      }
+      if (!nextId) {
+        for (let i = idx + 1; i < flat.length; i++) {
+          if (!doneSet.has(flat[i].id)) {
+            nextId = flat[i].id;
+            break;
+          }
+        }
+      }
     }
 
-    const justDone = MARCUS_TASKS.find((t) => t.id === id);
+    const justDone = MARCUS_TASKS.find((t) => t.id === primaryId);
 
     setDoneIds((prev) => {
       const next = new Set(prev);
-      next.add(id);
+      allIds.forEach((id) => next.add(id));
       return next;
     });
     setSelectedId(nextId);
@@ -99,9 +143,10 @@ export default function App() {
     // Stage the Undo toast and start the auto-dismiss timer.
     clearUndoTimer();
     setUndoToast({
-      id,
+      ids: allIds,
       title: justDone?.title || "task",
-      prevSelectedId: id,
+      extraCount: allIds.length - 1,
+      prevSelectedId: primaryId,
     });
     undoTimerRef.current = setTimeout(() => {
       setUndoToast(null);
@@ -113,7 +158,7 @@ export default function App() {
     if (!undoToast) return;
     setDoneIds((prev) => {
       const next = new Set(prev);
-      next.delete(undoToast.id);
+      undoToast.ids.forEach((id) => next.delete(id));
       return next;
     });
     setSelectedId(undoToast.prevSelectedId);
@@ -156,12 +201,15 @@ export default function App() {
           display: "flex",
           height: "100vh",
           padding: 8,
-          gap: 8,
+          gap: isMobile ? 0 : 8,
           overflow: "hidden",
           boxSizing: "border-box",
         }}
       >
-        <Sidebar />
+        <Sidebar
+          mobileOpen={mobileSidebarOpen}
+          onMobileClose={() => setMobileSidebarOpen(false)}
+        />
         <div
           style={{
             display: "flex",
@@ -216,8 +264,12 @@ export default function App() {
               <span className="flex items-center justify-center px-1.5 py-1">
                 <i className="ti ti-dots-vertical text-[12px]" />
               </span>
-              <span className="w-px self-stretch bg-[var(--border-color-medium)]" />
-              <span className="px-2 py-1">Ctrl K</span>
+              <span className="text-[0.65em] text-[var(--font-color-tertiary)]">
+                |
+              </span>
+              <span className="px-2 py-1 text-[var(--font-color-tertiary)]">
+                Ctrl K
+              </span>
             </button>
           </div>
 
@@ -244,6 +296,9 @@ export default function App() {
                     <span>
                       Marked done ·{" "}
                       <span className="font-medium">{undoToast.title}</span>
+                      {undoToast.extraCount > 0 && (
+                        <span> · +{undoToast.extraCount} more</span>
+                      )}
                     </span>
                     <button
                       type="button"
@@ -320,7 +375,7 @@ export default function App() {
                       className="flex-1 min-h-0 flex flex-col"
                     >
                       <header style={{ flexShrink: 0 }} className="mt-4 mx-4">
-                        <div className="pb-2 flex flex-row justify-between border-b border-[var(--border-color-medium)] text-sm text-[var(--font-color-secondary)]">
+                        <div className="pb-2 flex flex-row justify-between border-b border-[var(--border-color-medium)] text-xs text-[var(--font-color-secondary)]">
                           <div className="whitespace-nowrap">
                             <i className="ti ti-list whitespace-nowrap text-ellipsis" />{" "}
                             All Notifications <span>· {totalShown}</span>{" "}
@@ -344,10 +399,10 @@ export default function App() {
                               animate={{ height: "auto", opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
                               transition={{ duration: 0.2, ease: "easeOut" }}
-                              style={{ overflow: "hidden" }}
                             >
                               <FocusFilterBar
                                 focusOption={focusOption}
+                                onChange={setFocusId}
                                 onClear={() => setFocusId(null)}
                               />
                             </motion.div>
@@ -382,38 +437,104 @@ export default function App() {
                 </AnimatePresence>
               </main>
               <AnimatePresence initial={false}>
-                {selected && (
-                  <motion.aside
-                    key="action-panel"
-                    initial={{ width: 0 }}
-                    animate={{ width: 500 }}
-                    exit={{ width: 0 }}
-                    transition={{ duration: 0.22, ease: "easeOut" }}
-                    style={{
-                      height: "100%",
-                      overflow: "hidden",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 500,
-                        height: "100%",
-                        paddingLeft: 8,
-                      }}
+                {selected &&
+                  (isMobile ? (
+                    <motion.aside
+                      key="action-panel-mobile"
+                      initial={{ x: "100%" }}
+                      animate={{ x: actionPanelHidden ? "100%" : 0 }}
+                      exit={{ x: "100%" }}
+                      transition={{ duration: 0.22, ease: "easeOut" }}
+                      className="fixed inset-0 z-50 bg-[var(--background-primary)] overflow-hidden"
                     >
                       <ActionPanel
                         task={selected}
+                        doneIds={doneIds}
                         onClose={() => setSelectedId(null)}
-                        onMarkDone={() => markDone(selected.id)}
+                        onMarkDone={(extraIds) =>
+                          markDone(selected.id, extraIds)
+                        }
                       />
-                    </div>
-                  </motion.aside>
-                )}
+                    </motion.aside>
+                  ) : (
+                    <motion.aside
+                      key="action-panel-desktop"
+                      initial={{ width: 0 }}
+                      animate={{ width: 500 }}
+                      exit={{ width: 0 }}
+                      transition={{ duration: 0.22, ease: "easeOut" }}
+                      className="h-full overflow-hidden flex-shrink-0"
+                    >
+                      <div className="w-[500px] h-full pl-2">
+                        <ActionPanel
+                          task={selected}
+                          doneIds={doneIds}
+                          onClose={() => setSelectedId(null)}
+                          onMarkDone={(extraIds) =>
+                            markDone(selected.id, extraIds)
+                          }
+                        />
+                      </div>
+                    </motion.aside>
+                  ))}
               </AnimatePresence>
             </div>
           </div>
         </div>
+
+        {isMobile && (
+          <div className="fixed bottom-0 left-0 right-0 z-[60] flex items-center justify-around gap-1 px-2 py-2 bg-[var(--background-secondary)] border-t border-[var(--border-color-medium)]">
+            <button
+              type="button"
+              onClick={() => setMobileSidebarOpen((v) => !v)}
+              aria-label={mobileSidebarOpen ? "Close menu" : "Open menu"}
+              className={`flex-1 inline-flex items-center justify-center h-9 rounded transition-colors cursor-pointer border-0 ${
+                mobileSidebarOpen
+                  ? "bg-[var(--background-transparent-medium)] text-[var(--font-color-primary)]"
+                  : "bg-transparent text-[var(--font-color-secondary)] hover:bg-[var(--background-transparent-light)]"
+              }`}
+            >
+              <i className="ti ti-menu-2 text-[16px]" />
+            </button>
+            <button
+              type="button"
+              aria-label="Search"
+              className="flex-1 inline-flex items-center justify-center h-9 rounded bg-transparent text-[var(--font-color-secondary)] cursor-default border-0"
+            >
+              <i className="ti ti-search text-[16px]" />
+            </button>
+            <button
+              type="button"
+              aria-label="New chat"
+              className="flex-1 inline-flex items-center justify-center h-9 rounded bg-transparent text-[var(--font-color-secondary)] cursor-default border-0"
+            >
+              <i className="ti ti-message-circle text-[16px]" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setActionPanelHidden((v) => !v)}
+              disabled={!selected}
+              aria-label={
+                actionPanelHidden ? "Show action panel" : "Hide action panel"
+              }
+              className={`flex-1 inline-flex items-center justify-center h-9 rounded transition-colors border-0 ${
+                !selected
+                  ? "bg-transparent text-[var(--font-color-extra-light)] cursor-not-allowed"
+                  : actionPanelHidden
+                    ? "bg-transparent text-[var(--font-color-secondary)] cursor-pointer hover:bg-[var(--background-transparent-light)]"
+                    : "bg-[var(--background-transparent-medium)] text-[var(--font-color-primary)] cursor-pointer"
+              }`}
+            >
+              <i
+                className={`ti ${
+                  actionPanelHidden
+                    ? "ti-layout-sidebar-right"
+                    : "ti-layout-sidebar-right-collapse"
+                } text-[16px]`}
+              />
+            </button>
+          </div>
+        )}
       </div>
     </ChipClickContext.Provider>
   );
