@@ -3,8 +3,10 @@ import { AnimatePresence } from "framer-motion";
 import { FOCUS_OPTIONS } from "../../data/Graph";
 import { SearchPopover } from "../common/Popover";
 import { FocusOptionItem } from "./FocusPicker";
+import { useIsMobile } from "../../utils/useIsMobile";
 
 export function FocusFilterBar({ focusOption, onChange, onClear }) {
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
 
   function pick(id) {
@@ -65,26 +67,59 @@ export function FocusFilterBar({ focusOption, onChange, onClear }) {
         </span>
         <button
           type="button"
-          className="inline-flex items-center gap-1 border-0 px-2 py-0.5 rounded text-[var(--font-color-secondary)] cursor-pointer whitespace-nowrap transition-colors bg-transparent hover:bg-[var(--background-transparent-light)]"
+          aria-label="Add filter"
+          className={
+            isMobile
+              ? "w-7 h-7 inline-flex items-center justify-center border-0 rounded text-[var(--font-color-secondary)] cursor-pointer transition-colors bg-transparent hover:bg-[var(--background-transparent-light)]"
+              : "inline-flex items-center gap-1 border-0 px-2 py-0.5 rounded text-[var(--font-color-secondary)] cursor-pointer whitespace-nowrap transition-colors bg-transparent hover:bg-[var(--background-transparent-light)]"
+          }
         >
-          <span>+</span>
-          <span>Add filter</span>
+          {isMobile ? (
+            <i className="ti ti-filter-plus text-[14px]" />
+          ) : (
+            <>
+              <span>+</span>
+              <span>Add filter</span>
+            </>
+          )}
         </button>
       </div>
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={onClear}
-          className="border-0 px-2 py-0.5 rounded text-[var(--font-color-secondary)] cursor-pointer whitespace-nowrap transition-colors bg-transparent hover:bg-[var(--background-transparent-light)]"
-        >
-          Reset
-        </button>
-        <button
-          type="button"
-          className="px-2 py-1 rounded border border-[var(--color-blue)] text-[var(--color-blue)] bg-transparent cursor-pointer whitespace-nowrap transition-colors hover:bg-[var(--background-transparent-light)]"
-        >
-          Save as new view
-        </button>
+      <div className="flex items-center gap-2">
+        {isMobile ? (
+          <>
+            <button
+              type="button"
+              onClick={onClear}
+              aria-label="Reset"
+              className="w-7 h-7 inline-flex items-center justify-center border-0 rounded text-[var(--font-color-secondary)] cursor-pointer transition-colors bg-transparent hover:bg-[var(--background-transparent-light)]"
+            >
+              <i className="ti ti-arrow-back-up text-[14px]" />
+            </button>
+            <button
+              type="button"
+              aria-label="Save as new view"
+              className="w-7 h-7 inline-flex items-center justify-center rounded border border-[var(--color-blue)] text-[var(--color-blue)] bg-transparent cursor-pointer transition-colors hover:bg-[var(--background-transparent-light)]"
+            >
+              <i className="ti ti-bookmark-plus text-[14px]" />
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={onClear}
+              className="border-0 px-2 py-0.5 rounded text-[var(--font-color-secondary)] cursor-pointer whitespace-nowrap transition-colors bg-transparent hover:bg-[var(--background-transparent-light)]"
+            >
+              Reset
+            </button>
+            <button
+              type="button"
+              className="px-2 py-1 rounded border border-[var(--color-blue)] text-[var(--color-blue)] bg-transparent cursor-pointer whitespace-nowrap transition-colors hover:bg-[var(--background-transparent-light)]"
+            >
+              Save as new view
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

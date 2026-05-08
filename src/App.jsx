@@ -77,11 +77,7 @@ export default function App() {
     // first tab) when no specific tab is requested — chip clicks land users
     // on something more useful than the field summary.
     const tab =
-      options.tab !== undefined
-        ? options.tab
-        : isMobile
-          ? "Notes"
-          : undefined;
+      options.tab !== undefined ? options.tab : isMobile ? "Notes" : undefined;
     setView({ entity, tab });
     // On mobile, fold the action panel out of view so the record detail in the
     // center panel is visible. The user can summon it back via the bottom nav.
@@ -229,119 +225,75 @@ export default function App() {
             mobileOpen={mobileSidebarOpen}
             onMobileClose={() => setMobileSidebarOpen(false)}
           />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            minWidth: 0,
-            height: "100%",
-            overflow: "hidden",
-          }}
-        >
           <div
-            className="flex items-center justify-between shrink-0 gap-3"
-            style={{ marginBottom: 8, marginTop: 4 }}
-          >
-            {view ? (
-              (() => {
-                const meta = getRecordMeta(view.entity);
-                return (
-                  <div className="flex items-center gap-2 min-w-0 text-[15px]">
-                    <button
-                      type="button"
-                      onClick={closeView}
-                      aria-label="Close"
-                      className="inline-flex items-center justify-center w-7 h-7 p-0 bg-transparent border-0 text-[var(--font-color-secondary)] text-base rounded cursor-pointer transition-colors hover:bg-[var(--background-transparent-light)]"
-                    >
-                      ×
-                    </button>
-                    <ToneIcon tone={meta.tone} size={24} fontSize={14}>
-                      <i className={`ti ${meta.icon}`} />
-                    </ToneIcon>
-                    <span className="text-[var(--font-color-secondary)]">
-                      {meta.plural}
-                    </span>
-                    <span className="text-[var(--font-color-tertiary)]">/</span>
-                    <span className="font-medium truncate">{meta.name}</span>
-                  </div>
-                );
-              })()
-            ) : (
-              <div className="flex items-center gap-2 font-medium">
-                <ToneIcon tone="sky" size={22} fontSize={13}>
-                  <i className="ti ti-inbox" />
-                </ToneIcon>
-                <div className="text-[13px]">Inbox</div>
-              </div>
-            )}
-            <button
-              type="button"
-              aria-label="Open command menu"
-              className="shrink-0 inline-flex items-center rounded border border-[var(--border-color-medium)] bg-[var(--background-secondary)] text-[var(--font-color-secondary)] text-[11px] font-medium cursor-pointer overflow-hidden hover:bg-[var(--background-tertiary)] transition-colors"
-            >
-              <span className="flex items-center justify-center px-1.5 py-1">
-                <i className="ti ti-dots-vertical text-[12px]" />
-              </span>
-              <span className="text-[0.65em] text-[var(--font-color-tertiary)]">
-                |
-              </span>
-              <span className="px-2 py-1 text-[var(--font-color-tertiary)]">
-                Ctrl K
-              </span>
-            </button>
-          </div>
-
-          <div
-            className="flex-col"
             style={{
               display: "flex",
+              flexDirection: "column",
               flex: 1,
-              minHeight: 0,
+              minWidth: 0,
+              height: "100%",
               overflow: "hidden",
             }}
           >
-            {!isMobile && (
-              <AnimatePresence initial={false}>
-                {undoToast && (
-                  <motion.div
-                    key="undo-toast"
-                    initial={{ opacity: 0, height: 0, y: -8 }}
-                    animate={{ opacity: 1, height: "auto", y: 0 }}
-                    exit={{ opacity: 0, height: 0, y: -8 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="shrink-0 overflow-hidden"
-                  >
-                    <div className="flex items-center justify-center gap-3 px-4 py-2 mb-2 rounded bg-[var(--accent-tertiary)] border border-[var(--color-blue)] text-[var(--color-blue)] text-[13px]">
-                      <span>
-                        Marked done ·{" "}
-                        <span className="font-medium">{undoToast.title}</span>
-                        {undoToast.extraCount > 0 && (
-                          <span> · +{undoToast.extraCount} more</span>
-                        )}
-                      </span>
+            <div
+              className="flex items-center justify-between shrink-0 gap-3"
+              style={{ marginBottom: 8, marginTop: 4 }}
+            >
+              {view ? (
+                (() => {
+                  const meta = getRecordMeta(view.entity);
+                  return (
+                    <div className="flex items-center gap-2 min-w-0 text-[15px]">
                       <button
                         type="button"
-                        onClick={undoMarkDone}
-                        className="px-2 py-0.5 rounded border border-[var(--color-blue)] text-[var(--color-blue)] bg-transparent cursor-pointer text-[12px] transition-colors hover:bg-[var(--color-blue)] hover:text-[var(--font-color-on-accent)]"
-                      >
-                        Undo
-                      </button>
-                      <button
-                        type="button"
-                        onClick={dismissUndoToast}
-                        aria-label="Dismiss"
-                        className="ml-1 bg-transparent border-0 text-[var(--color-blue)] cursor-pointer text-[14px] leading-none transition-opacity opacity-70 hover:opacity-100"
+                        onClick={closeView}
+                        aria-label="Close"
+                        className="inline-flex items-center justify-center w-7 h-7 p-0 bg-transparent border-0 text-[var(--font-color-secondary)] text-base rounded cursor-pointer transition-colors hover:bg-[var(--background-transparent-light)]"
                       >
                         ×
                       </button>
+                      <ToneIcon tone={meta.tone} size={24} fontSize={14}>
+                        <i className={`ti ${meta.icon}`} />
+                      </ToneIcon>
+                      <span className="text-[var(--font-color-secondary)]">
+                        {meta.plural}
+                      </span>
+                      <span className="text-[var(--font-color-tertiary)]">
+                        /
+                      </span>
+                      <span className="font-medium truncate">{meta.name}</span>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            )}
+                  );
+                })()
+              ) : (
+                <div className="flex items-center gap-2 font-medium">
+                  <ToneIcon tone="sky" size={22} fontSize={13}>
+                    <i className="ti ti-inbox" />
+                  </ToneIcon>
+                  <div className="text-[13px]">Inbox</div>
+                </div>
+              )}
+              {!isMobile && (
+                <button
+                  type="button"
+                  aria-label="Open command menu"
+                  className="shrink-0 inline-flex items-center rounded border border-[var(--border-color-medium)] bg-[var(--background-secondary)] text-[var(--font-color-secondary)] text-[11px] font-medium cursor-pointer overflow-hidden hover:bg-[var(--background-tertiary)] transition-colors"
+                >
+                  <span className="flex items-center justify-center px-1.5 py-1">
+                    <i className="ti ti-dots-vertical text-[12px]" />
+                  </span>
+                  <span className="text-[0.65em] text-[var(--font-color-tertiary)]">
+                    |
+                  </span>
+                  <span className="px-2 py-1 text-[var(--font-color-tertiary)]">
+                    Ctrl K
+                  </span>
+                </button>
+              )}
+            </div>
 
             <div
+              className="flex-col"
               style={{
                 display: "flex",
                 flex: 1,
@@ -349,144 +301,203 @@ export default function App() {
                 overflow: "hidden",
               }}
             >
-              <main
-                className="border rounded-lg border-[var(--background-tertiary)] bg-[var(--background-primary)]"
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  overflow: "hidden",
-                }}
-              >
-                <AnimatePresence mode="wait" initial={false}>
-                  {view ? (
+              {!isMobile && (
+                <AnimatePresence initial={false}>
+                  {undoToast && (
                     <motion.div
-                      key="record"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.18, ease: "easeOut" }}
-                      className="flex-1 min-h-0 flex flex-col"
+                      key="undo-toast"
+                      initial={{ opacity: 0, height: 0, y: -8 }}
+                      animate={{ opacity: 1, height: "auto", y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: -8 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="shrink-0 overflow-hidden"
                     >
-                      <AnimatePresence mode="wait" initial={false}>
-                        <motion.div
-                          key={view.entity.objectId}
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -6 }}
-                          transition={{ duration: 0.14, ease: "easeOut" }}
-                          className="flex-1 min-h-0 flex flex-col"
-                        >
-                          <RecordDetail
-                            entity={view.entity}
-                            defaultTab={view.tab}
-                          />
-                        </motion.div>
-                      </AnimatePresence>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="inbox"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.18, ease: "easeOut" }}
-                      className="flex-1 min-h-0 flex flex-col"
-                    >
-                      <header style={{ flexShrink: 0 }} className="mt-4 mx-4">
-                        <div className="pb-2 flex flex-row justify-between border-b border-[var(--border-color-medium)] text-xs text-[var(--font-color-secondary)]">
-                          <div className="whitespace-nowrap">
-                            <i className="ti ti-list whitespace-nowrap text-ellipsis" />{" "}
-                            All Notifications <span>· {totalShown}</span>{" "}
-                            <i className="ti ti-chevron-down" />
-                          </div>
-                          <div className="flex flex-row items-center gap-4">
-                            <FocusPicker
-                              value={focusId}
-                              onChange={setFocusId}
-                            />
-                            <div>Filter</div>
-                            <div>Sort</div>
-                            <div>Options</div>
-                          </div>
-                        </div>
-                        <AnimatePresence initial={false}>
-                          {focusOption && (
-                            <motion.div
-                              key="focus-bar"
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.2, ease: "easeOut" }}
-                            >
-                              <FocusFilterBar
-                                focusOption={focusOption}
-                                onChange={setFocusId}
-                                onClear={() => setFocusId(null)}
-                              />
-                            </motion.div>
+                      <div className="flex items-center justify-center gap-3 px-4 py-2 mb-2 rounded bg-[var(--accent-tertiary)] border border-[var(--color-blue)] text-[var(--color-blue)] text-[13px]">
+                        <span>
+                          Marked done ·{" "}
+                          <span className="font-medium">{undoToast.title}</span>
+                          {undoToast.extraCount > 0 && (
+                            <span> · +{undoToast.extraCount} more</span>
                           )}
-                        </AnimatePresence>
-                      </header>
-
-                      <div
-                        style={{
-                          flex: 1,
-                          minHeight: 0,
-                          overflow: "auto",
-                        }}
-                      >
-                        <TaskTable
-                          groups={groups}
-                          selectedId={selectedId}
-                          onSelect={pick}
-                        />
-
-                        {focusId && totalShown === 0 && (
-                          <p>
-                            <small>
-                              No tasks within {MAX_FOCUS_HOPS} hops of{" "}
-                              {focusOption?.name}.
-                            </small>
-                          </p>
-                        )}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={undoMarkDone}
+                          className="px-2 py-0.5 rounded border border-[var(--color-blue)] text-[var(--color-blue)] bg-transparent cursor-pointer text-[12px] transition-colors hover:bg-[var(--color-blue)] hover:text-[var(--font-color-on-accent)]"
+                        >
+                          Undo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={dismissUndoToast}
+                          aria-label="Dismiss"
+                          className="ml-1 bg-transparent border-0 text-[var(--color-blue)] cursor-pointer text-[14px] leading-none transition-opacity opacity-70 hover:opacity-100"
+                        >
+                          ×
+                        </button>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </main>
-              <AnimatePresence initial={false}>
-                {selected &&
-                  (isMobile ? (
-                    <motion.aside
-                      key="action-panel-mobile"
-                      initial={{ x: "100%" }}
-                      animate={{ x: actionPanelHidden ? "100%" : 0 }}
-                      exit={{ x: "100%" }}
-                      transition={{ duration: 0.22, ease: "easeOut" }}
-                      className="fixed top-0 left-0 right-0 bottom-[52px] z-50 bg-[var(--background-primary)] overflow-hidden"
-                    >
-                      <ActionPanel
-                        task={selected}
-                        doneIds={doneIds}
-                        onClose={() => setSelectedId(null)}
-                        onMarkDone={(extraIds) =>
-                          markDone(selected.id, extraIds)
-                        }
-                      />
-                    </motion.aside>
-                  ) : (
-                    <motion.aside
-                      key="action-panel-desktop"
-                      initial={{ width: 0 }}
-                      animate={{ width: 500 }}
-                      exit={{ width: 0 }}
-                      transition={{ duration: 0.22, ease: "easeOut" }}
-                      className="h-full overflow-hidden flex-shrink-0"
-                    >
-                      <div className="w-[500px] h-full pl-2">
+              )}
+
+              <div
+                style={{
+                  display: "flex",
+                  flex: 1,
+                  minHeight: 0,
+                  overflow: "hidden",
+                }}
+              >
+                <main
+                  className="border rounded-lg border-[var(--background-tertiary)] bg-[var(--background-primary)]"
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    overflow: "hidden",
+                  }}
+                >
+                  <AnimatePresence mode="wait" initial={false}>
+                    {view ? (
+                      <motion.div
+                        key="record"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        className="flex-1 min-h-0 flex flex-col"
+                      >
+                        <AnimatePresence mode="wait" initial={false}>
+                          <motion.div
+                            key={view.entity.objectId}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.14, ease: "easeOut" }}
+                            className="flex-1 min-h-0 flex flex-col"
+                          >
+                            <RecordDetail
+                              entity={view.entity}
+                              defaultTab={view.tab}
+                            />
+                          </motion.div>
+                        </AnimatePresence>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="inbox"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        className="flex-1 min-h-0 flex flex-col"
+                      >
+                        <header style={{ flexShrink: 0 }} className="mt-4 mx-4">
+                          <div className="pb-2 flex flex-row justify-between border-b border-[var(--border-color-medium)] text-xs text-[var(--font-color-secondary)]">
+                            <div className="whitespace-nowrap flex flex-row items-center gap-2">
+                              <i className="ti ti-list whitespace-nowrap text-ellipsis" />{" "}
+                              All Notifications <span>· {totalShown}</span>{" "}
+                              <i className="ti ti-chevron-down" />
+                            </div>
+                            <div
+                              className={`flex flex-row items-center ${isMobile ? "gap-1" : "gap-4"}`}
+                            >
+                              <FocusPicker
+                                value={focusId}
+                                onChange={setFocusId}
+                              />
+                              {isMobile ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    aria-label="Filter"
+                                    className="w-7 h-7 inline-flex items-center justify-center border-0 rounded bg-transparent text-[var(--font-color-secondary)] cursor-pointer transition-colors hover:bg-[var(--background-transparent-light)]"
+                                  >
+                                    <i className="ti ti-filter text-[14px]" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    aria-label="Sort"
+                                    className="w-7 h-7 inline-flex items-center justify-center border-0 rounded bg-transparent text-[var(--font-color-secondary)] cursor-pointer transition-colors hover:bg-[var(--background-transparent-light)]"
+                                  >
+                                    <i className="ti ti-arrows-sort text-[14px]" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    aria-label="Options"
+                                    className="w-7 h-7 inline-flex items-center justify-center border-0 rounded bg-transparent text-[var(--font-color-secondary)] cursor-pointer transition-colors hover:bg-[var(--background-transparent-light)]"
+                                  >
+                                    <i className="ti ti-adjustments-horizontal text-[14px]" />
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <div>Filter</div>
+                                  <div>Sort</div>
+                                  <div>Options</div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <AnimatePresence initial={false}>
+                            {focusOption && (
+                              <motion.div
+                                key="focus-bar"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2, ease: "easeOut" }}
+                              >
+                                <FocusFilterBar
+                                  focusOption={focusOption}
+                                  onChange={setFocusId}
+                                  onClear={() => setFocusId(null)}
+                                />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </header>
+
+                        <div
+                          style={{
+                            flex: 1,
+                            minHeight: 0,
+                            overflow: "auto",
+                          }}
+                        >
+                          <TaskTable
+                            groups={groups}
+                            selectedId={selectedId}
+                            onSelect={pick}
+                          />
+
+                          {focusId && totalShown === 0 && (
+                            <p>
+                              <small>
+                                No tasks within {MAX_FOCUS_HOPS} hops of{" "}
+                                {focusOption?.name}.
+                              </small>
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </main>
+                <AnimatePresence initial={false}>
+                  {selected &&
+                    (isMobile ? (
+                      <motion.aside
+                        key="action-panel-mobile"
+                        initial={{ x: "100%" }}
+                        animate={{ x: actionPanelHidden ? "100%" : 0 }}
+                        exit={{ x: "100%" }}
+                        transition={{ duration: 0.22, ease: "easeOut" }}
+                        className="fixed top-0 left-0 right-0 bottom-[52px] z-50 bg-[var(--background-primary)] overflow-hidden"
+                      >
                         <ActionPanel
                           task={selected}
                           doneIds={doneIds}
@@ -495,13 +506,32 @@ export default function App() {
                             markDone(selected.id, extraIds)
                           }
                         />
-                      </div>
-                    </motion.aside>
-                  ))}
-              </AnimatePresence>
+                      </motion.aside>
+                    ) : (
+                      <motion.aside
+                        key="action-panel-desktop"
+                        initial={{ width: 0 }}
+                        animate={{ width: 500 }}
+                        exit={{ width: 0 }}
+                        transition={{ duration: 0.22, ease: "easeOut" }}
+                        className="h-full overflow-hidden flex-shrink-0"
+                      >
+                        <div className="w-[500px] h-full pl-2">
+                          <ActionPanel
+                            task={selected}
+                            doneIds={doneIds}
+                            onClose={() => setSelectedId(null)}
+                            onMarkDone={(extraIds) =>
+                              markDone(selected.id, extraIds)
+                            }
+                          />
+                        </div>
+                      </motion.aside>
+                    ))}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
-        </div>
         </div>
 
         {isMobile && (

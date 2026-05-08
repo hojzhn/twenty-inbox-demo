@@ -3,6 +3,7 @@ import { AnimatePresence } from "framer-motion";
 import { FOCUS_OPTIONS } from "../../data/Graph";
 import { SearchPopover } from "../common/Popover";
 import { ColorAvatar } from "../common/Primitives";
+import { useIsMobile } from "../../utils/useIsMobile";
 
 export function FocusOptionItem({ option, selected, onClick }) {
   return (
@@ -32,6 +33,7 @@ export function FocusOptionItem({ option, selected, onClick }) {
 }
 
 export function FocusPicker({ value, onChange }) {
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
 
   function pick(id) {
@@ -44,13 +46,26 @@ export function FocusPicker({ value, onChange }) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`border-0 px-2 py-0.5 cursor-pointer rounded transition-colors ${
-          open
-            ? "bg-[var(--background-transparent-medium)]"
-            : "bg-transparent hover:bg-[var(--background-transparent-light)]"
-        }`}
+        aria-label="Focus"
+        className={
+          isMobile
+            ? `w-7 h-7 inline-flex items-center justify-center border-0 cursor-pointer rounded text-[var(--font-color-secondary)] transition-colors ${
+                open
+                  ? "bg-[var(--background-transparent-medium)]"
+                  : "bg-transparent hover:bg-[var(--background-transparent-light)]"
+              }`
+            : `border-0 px-2 py-0.5 cursor-pointer rounded transition-colors ${
+                open
+                  ? "bg-[var(--background-transparent-medium)]"
+                  : "bg-transparent hover:bg-[var(--background-transparent-light)]"
+              }`
+        }
       >
-        Focus
+        {isMobile ? (
+          <i className="ti ti-target text-[14px]" />
+        ) : (
+          "Focus"
+        )}
       </button>
       <AnimatePresence>
         {open && (

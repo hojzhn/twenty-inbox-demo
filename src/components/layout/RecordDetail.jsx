@@ -13,7 +13,7 @@ const TYPE_META = {
     icon: "ti-checkbox",
     plural: "Tasks",
     tone: "green",
-    tabs: ["Note", "Timeline", "Files"],
+    tabs: ["Home", "Timeline", "Files"],
   },
   Opportunity: {
     icon: "ti-target",
@@ -25,13 +25,13 @@ const TYPE_META = {
     icon: "ti-building",
     plural: "Companies",
     tone: "blue",
-    tabs: ["Timeline", "Tasks", "Notes", "Files"],
+    tabs: ["Timeline", "Tasks", "Notes", "Files", "Emails", "Calendar"],
   },
   Person: {
     icon: "ti-user",
     plural: "People",
     tone: "purple",
-    tabs: ["Timeline", "Tasks", "Notes", "Files", "Emails"],
+    tabs: ["Timeline", "Tasks", "Notes", "Files", "Emails", "Calendar"],
   },
   User: {
     icon: "ti-user-circle",
@@ -606,18 +606,20 @@ function Tabs({ tabs, active, onSelect }) {
 
       <div
         ref={containerRef}
-        className="flex items-center gap-1 min-w-0 overflow-hidden"
+        className="flex items-center gap-1 min-w-0"
       >
-        {visibleTabs.map((label) => (
-          <TabPill
-            key={label}
-            label={label}
-            active={label === active}
-            onClick={() => onSelect?.(label)}
-          />
-        ))}
+        <div className="flex items-center gap-1 min-w-0 flex-1 overflow-hidden">
+          {visibleTabs.map((label) => (
+            <TabPill
+              key={label}
+              label={label}
+              active={label === active}
+              onClick={() => onSelect?.(label)}
+            />
+          ))}
+        </div>
         {hiddenTabs.length > 0 && (
-          <span ref={moreWrapperRef} className="relative ml-auto">
+          <span ref={moreWrapperRef} className="relative shrink-0">
             <button
               type="button"
               onClick={() => setPopoverOpen((v) => !v)}
@@ -641,7 +643,7 @@ function Tabs({ tabs, active, onSelect }) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 4 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-1 z-10 min-w-[160px] bg-[var(--background-transparent-primary)] backdrop-blur-md border border-[var(--border-color-light)] rounded shadow-lg py-1 flex flex-col"
+                  className="absolute right-0 top-full mt-1 z-20 min-w-[160px] bg-[var(--background-primary)] border border-[var(--border-color-medium)] rounded shadow-lg py-1 flex flex-col"
                 >
                   {hiddenTabs.map((label) => (
                     <button
@@ -852,8 +854,11 @@ export function RecordDetail({ entity, defaultTab }) {
   const Fields = FIELDS_BY_TYPE[type];
 
   // On mobile, prepend a "Home" tab that hosts the field summary (since the
-  // left aside is hidden in that layout).
-  const tabs = isMobile ? ["Home", ...meta.tabs] : meta.tabs;
+  // left aside is hidden in that layout). Skip if Home is already a tab.
+  const tabs =
+    isMobile && !meta.tabs.includes("Home")
+      ? ["Home", ...meta.tabs]
+      : meta.tabs;
   // Treat "Notes" and "Note" as equivalent so a generic notes-tab request
   // lands on whichever variant the entity type uses.
   const resolveTab = (req) => {
